@@ -36,8 +36,8 @@ set_false_path -to [get_ports {qsfp_led_act qsfp_led_stat_g qsfp_led_stat_y}]
 set_output_delay 0 [get_ports {qsfp_led_act qsfp_led_stat_g qsfp_led_stat_y}]
 
 # UART
-#set_property -dict {LOC BE26 IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports usb_uart0_txd]
-#set_property -dict {LOC BF26 IOSTANDARD LVCMOS18} [get_ports usb_uart0_rxd]
+set_property -dict {LOC BE26 IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports usb_uart0_txd]
+set_property -dict {LOC BF26 IOSTANDARD LVCMOS18} [get_ports usb_uart0_rxd]
 #set_property -dict {LOC A17  IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports usb_uart1_txd]
 #set_property -dict {LOC B15  IOSTANDARD LVCMOS18} [get_ports usb_uart1_rxd]
 #set_property -dict {LOC A19  IOSTANDARD LVCMOS18 SLEW SLOW DRIVE 8} [get_ports usb_uart2_txd]

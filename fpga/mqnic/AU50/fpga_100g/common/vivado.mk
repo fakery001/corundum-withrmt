@@ -42,6 +42,7 @@ INC_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(INC_FILES))) $(filter 
 XCI_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(XCI_FILES))) $(filter /% ./%,$(XCI_FILES))
 IP_TCL_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(IP_TCL_FILES))) $(filter /% ./%,$(IP_TCL_FILES))
 CONFIG_TCL_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(CONFIG_TCL_FILES))) $(filter /% ./%,$(CONFIG_TCL_FILES))
+MEM_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(MEM_FILES))) $(filter /% ./%,$(MEM_FILES))
 
 ifdef XDC_FILES
   XDC_FILES_REL = $(patsubst %, ../%, $(filter-out /% ./%,$(XDC_FILES))) $(filter /% ./%,$(XDC_FILES))
@@ -88,6 +89,8 @@ create_project.tcl: Makefile $(XCI_FILES_REL) $(IP_TCL_FILES_REL)
 	for x in $(XCI_FILES_REL); do echo "import_ip $$x" >> $@; done
 	for x in $(IP_TCL_FILES_REL); do echo "source $$x" >> $@; done
 	for x in $(CONFIG_TCL_FILES_REL); do echo "source $$x" >> $@; done
+	echo "add_files -fileset sources_1 defines.v $(MEM_FILES_REL)" >> $@
+	for x in $(MEM_FILES_REL); do echo 'set_property "file_type" "Memory Initialization Files"' [get_files $$x] >> $@; done
 
 update_config.tcl: $(CONFIG_TCL_FILES_REL) $(SYN_FILES_REL) $(INC_FILES_REL) $(XDC_FILES_REL)
 	echo "open_project -quiet $(FPGA_TOP).xpr" > $@

@@ -733,6 +733,17 @@ end
 
 assign pcie_user_reset = pcie_user_reset_reg_2;
 
+
+    wire         cfg_ext_read_received;
+    wire         cfg_ext_write_received;
+    wire   [9:0] cfg_ext_register_number;
+    wire   [7:0] cfg_ext_function_number;
+    wire  [31:0] cfg_ext_write_data;
+    wire   [3:0] cfg_ext_write_byte_enable;
+    wire  [31:0] cfg_ext_read_data;
+    wire         cfg_ext_read_data_valid;
+    
+    
 pcie4c_uscale_plus_0
 pcie4c_uscale_plus_inst (
     .pci_exp_txn(pcie_tx_n),
@@ -893,8 +904,37 @@ pcie4c_uscale_plus_inst (
     .sys_clk_gt(pcie_sys_clk_gt),
     .sys_reset(pcie_reset_n),
 
-    .phy_rdy_out()
+    .phy_rdy_out(),
+    
+    .cfg_ext_read_received                          ( cfg_ext_read_received ),
+    .cfg_ext_write_received                         ( cfg_ext_write_received ),
+    .cfg_ext_register_number                        ( cfg_ext_register_number ),
+    .cfg_ext_function_number                        ( cfg_ext_function_number ),
+    .cfg_ext_write_data                             ( cfg_ext_write_data ),
+    .cfg_ext_write_byte_enable                      ( cfg_ext_write_byte_enable ),
+    .cfg_ext_read_data                              ( cfg_ext_read_data ),
+    .cfg_ext_read_data_valid                        ( cfg_ext_read_data_valid )
 );
+
+wire pcie_tck, pcie_tms, pcie_tdi, pcie_tdo;
+
+xvc_vsec_wrapper xvc_vsec_i (
+    .clk(pcie_user_clk),
+    // PCIe Extended Capability Interface signals
+    .pcie3_cfg_ext_function_number(cfg_ext_function_number),
+    .pcie3_cfg_ext_register_number(cfg_ext_register_number),
+    .pcie3_cfg_ext_read_received(cfg_ext_read_received),
+    .pcie3_cfg_ext_read_data_valid(cfg_ext_read_data_valid),
+    .pcie3_cfg_ext_read_data(cfg_ext_read_data),
+    .pcie3_cfg_ext_write_received(cfg_ext_write_received),
+    .pcie3_cfg_ext_write_data(cfg_ext_write_data),
+    .pcie3_cfg_ext_write_byte_enable(cfg_ext_write_byte_enable),
+    .tap_tck(pcie_tck),
+    .tap_tdi(pcie_tdi),
+    .tap_tdo(pcie_tdo),
+    .tap_tms(pcie_tms));
+
+assign pcie_tdo = pcie_tdi;
 
 reg [RQ_SEQ_NUM_WIDTH-1:0] pcie_rq_seq_num0_reg;
 reg                        pcie_rq_seq_num_vld0_reg;

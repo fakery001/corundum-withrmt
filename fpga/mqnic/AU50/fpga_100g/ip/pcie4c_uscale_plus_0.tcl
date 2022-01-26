@@ -19,4 +19,7 @@ set_property -dict [list \
     CONFIG.pf0_bar0_size {16} \
     CONFIG.vendor_id {1234} \
     CONFIG.en_msi_per_vec_masking {true} \
+    CONFIG.mode_selection {Advanced} \
+    CONFIG.ext_pcie_cfg_space_enabled {true} \
+    CONFIG.ext_xvc_vsec_enable {true} \
 ] [get_ips pcie4c_uscale_plus_0]

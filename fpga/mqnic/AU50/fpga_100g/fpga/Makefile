@@ -110,6 +110,7 @@ XDC_FILES += lib/eth/syn/vivado/ptp_clock_cdc.tcl
 IP_TCL_FILES = ip/pcie4c_uscale_plus_0.tcl
 IP_TCL_FILES += ip/cmac_usplus_0.tcl
 IP_TCL_FILES += ip/cms.tcl
+IP_TCL_FILES += ip/pcie_xvc_jtag.tcl
 
 # Configuration
 CONFIG_TCL_FILES = ./config.tcl

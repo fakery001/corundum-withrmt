@@ -97,6 +97,15 @@ SYN_FILES += lib/pcie/rtl/pcie_us_cfg.v
 SYN_FILES += lib/pcie/rtl/pcie_us_msi.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
+# Murax SoC with VexRiscv RISC-V core
+SYN_FILES += vexriscv/Murax.v
+
+# Memory initialization files
+MEM_FILES  = vexriscv/Murax.v_toplevel_system_ram_ram_symbol0.bin
+MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol1.bin
+MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol2.bin
+MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol3.bin
+
 # XDC files
 XDC_FILES = fpga.xdc
 XDC_FILES += placement.xdc

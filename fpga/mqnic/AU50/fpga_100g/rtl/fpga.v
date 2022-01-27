@@ -163,10 +163,12 @@ module fpga #
     output wire         qsfp_led_act,
     output wire         qsfp_led_stat_g,
     output wire         qsfp_led_stat_y,
-    output wire         hbm_cattrip,
     input  wire [1:0]   msp_gpio,
     output wire         msp_uart_txd,
     input  wire         msp_uart_rxd,
+    output wire         usb_uart0_txd,
+    input  wire         usb_uart0_rxd,
+    output wire         hbm_cattrip,
 
     /*
      * PCI express
@@ -934,8 +936,6 @@ xvc_vsec_wrapper xvc_vsec_i (
     .tap_tdo(pcie_tdo),
     .tap_tms(pcie_tms));
 
-assign pcie_tdo = pcie_tdi;
-
 reg [RQ_SEQ_NUM_WIDTH-1:0] pcie_rq_seq_num0_reg;
 reg                        pcie_rq_seq_num_vld0_reg;
 reg [RQ_SEQ_NUM_WIDTH-1:0] pcie_rq_seq_num1_reg;
@@ -1325,6 +1325,28 @@ qsfp_cmac_inst (
     .drp_do(), // output [15:0]
     .drp_rdy(), // output
     .drp_we(1'b0) // input
+);
+
+(* mark_debug = "true" *) wire uart_txd;
+(* mark_debug = "true" *) wire uart_rxd;
+
+assign uart_rxd = usb_uart0_rxd;
+assign usb_uart0_txd = uart_txd;
+
+(* mark_debug = "true" *) wire [31:0] leds;
+
+Murax murax_inst(
+  .io_asyncReset(rst_125mhz_int),
+  .io_mainClk(clk_125mhz_int),
+  .io_gpioA_read(32'b0),
+  .io_gpioA_write(leds),
+  .io_gpioA_writeEnable(),
+  .io_uart_txd(uart_txd),
+  .io_uart_rxd(uart_rxd),
+  .io_jtag_tck(pcie_tck),
+  .io_jtag_tms(pcie_tms),
+  .io_jtag_tdi(pcie_tdi),
+  .io_jtag_tdo(pcie_tdo)
 );
 
 assign qsfp_led_stat_g = qsfp_rx_status;

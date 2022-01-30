@@ -14,7 +14,7 @@
 # INC_FILES - space-separated list of include files
 # XDC_FILES - space-separated list of timing constraint files
 # XCI_FILES - space-separated list of IP XCI files
-# 
+# MEM_FILES - space-separated list of (BRAM/URAM) memory initialization files
 # Example:
 # 
 # FPGA_TOP = fpga
@@ -23,6 +23,7 @@
 # SYN_FILES = rtl/fpga.v
 # XDC_FILES = fpga.xdc
 # XCI_FILES = ip/pcspma.xci
+# MEM_FILES = sw/build/hello_world.bin
 # include ../common/vivado.mk
 # 
 ###################################################################

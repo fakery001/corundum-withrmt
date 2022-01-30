@@ -329,7 +329,21 @@ module fpga_core #
     input  wire [31:0]                        m_axil_cms_rdata,
     input  wire [1:0]                         m_axil_cms_rresp,
     input  wire                               m_axil_cms_rvalid,
-    output wire                               m_axil_cms_rready
+    output wire                               m_axil_cms_rready,
+
+    /*
+     * GPIO
+     */
+    input  wire [31:0]                        gpio_in,
+    output wire [31:0]                        gpio_out,
+
+    /*
+     * JTAG
+     */
+    input  wire                               jtag_tdi,
+    output wire                               jtag_tdo,
+    input  wire                               jtag_tms,
+    input  wire                               jtag_tck
 );
 
 parameter PORT_COUNT = IF_COUNT*PORTS_PER_IF;
@@ -967,16 +981,16 @@ core_inst (
     /*
      * GPIO
      */
-    .app_gpio_in(0),
-    .app_gpio_out(),
+    .app_gpio_in(gpio_in),
+    .app_gpio_out(gpio_out),
 
     /*
      * JTAG
      */
-    .app_jtag_tdi(1'b0),
-    .app_jtag_tdo(),
-    .app_jtag_tms(1'b0),
-    .app_jtag_tck(1'b0)
+    .app_jtag_tdi(jtag_tdi),
+    .app_jtag_tdo(jtag_tdo),
+    .app_jtag_tms(jtag_tms),
+    .app_jtag_tck(jtag_tck)
 );
 
 endmodule

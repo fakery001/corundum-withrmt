@@ -918,7 +918,7 @@ pcie4c_uscale_plus_inst (
     .cfg_ext_read_data_valid                        ( cfg_ext_read_data_valid )
 );
 
-wire pcie_tck, pcie_tms, pcie_tdi, pcie_tdo;
+wire pcie_xvc_tck, pcie_xvc_tms, pcie_xvc_tdi, pcie_xvc_tdo;
 
 xvc_vsec_wrapper xvc_vsec_i (
     .clk(pcie_user_clk),
@@ -931,10 +931,10 @@ xvc_vsec_wrapper xvc_vsec_i (
     .pcie3_cfg_ext_write_received(cfg_ext_write_received),
     .pcie3_cfg_ext_write_data(cfg_ext_write_data),
     .pcie3_cfg_ext_write_byte_enable(cfg_ext_write_byte_enable),
-    .tap_tck(pcie_tck),
-    .tap_tdi(pcie_tdi),
-    .tap_tdo(pcie_tdo),
-    .tap_tms(pcie_tms));
+    .tap_tck(pcie_xvc_tck),
+    .tap_tdi(pcie_xvc_tdi),
+    .tap_tdo(pcie_xvc_tdo),
+    .tap_tms(pcie_xvc_tms));
 
 reg [RQ_SEQ_NUM_WIDTH-1:0] pcie_rq_seq_num0_reg;
 reg                        pcie_rq_seq_num_vld0_reg;
@@ -1327,29 +1327,14 @@ qsfp_cmac_inst (
     .drp_we(1'b0) // input
 );
 
-(* mark_debug = "true" *) wire uart_txd;
-(* mark_debug = "true" *) wire uart_rxd;
-
-assign uart_rxd = usb_uart0_rxd;
-assign usb_uart0_txd = uart_txd;
-
-(* mark_debug = "true" *) wire [31:0] leds;
-
-Murax murax_inst(
-  .io_asyncReset(rst_125mhz_int),
-  .io_mainClk(clk_125mhz_int),
-  .io_gpioA_read(32'b0),
-  .io_gpioA_write(leds),
-  .io_gpioA_writeEnable(),
-  .io_uart_txd(uart_txd),
-  .io_uart_rxd(uart_rxd),
-  .io_jtag_tck(pcie_tck),
-  .io_jtag_tms(pcie_tms),
-  .io_jtag_tdi(pcie_tdi),
-  .io_jtag_tdo(pcie_tdo)
-);
-
 assign qsfp_led_stat_g = qsfp_rx_status;
+
+// GPIO for app
+wire [31:0]  gpio_in;
+wire [31:0] gpio_out;
+
+assign gpio_in[0] = usb_uart0_rxd;
+assign usb_uart0_txd = gpio_out[0];
 
 fpga_core #(
     // FW and board IDs
@@ -1634,7 +1619,18 @@ core_inst (
     .m_axil_cms_rdata(axil_cms_rdata),
     .m_axil_cms_rresp(axil_cms_rresp),
     .m_axil_cms_rvalid(axil_cms_rvalid),
-    .m_axil_cms_rready(axil_cms_rready)
+    .m_axil_cms_rready(axil_cms_rready),
+    
+    /*
+     * JTAG debug for RISC-V from PCIe Ext Cap XVC
+     */
+    .jtag_tck(pcie_xvc_tck),
+    .jtag_tms(pcie_xvc_tms),
+    .jtag_tdi(pcie_xvc_tdi),
+    .jtag_tdo(pcie_xvc_tdo),
+    
+    .gpio_out(gpio_out),
+    .gpio_in(gpio_in)
 );
 
 endmodule

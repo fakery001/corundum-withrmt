@@ -97,14 +97,18 @@ SYN_FILES += lib/pcie/rtl/pcie_us_cfg.v
 SYN_FILES += lib/pcie/rtl/pcie_us_msi.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
+# Application
+SYN_FILES += app/template/rtl/mqnic_app_block.v
+SYN_FILES += lib/axi/rtl/axil_ram.v
+
 # Murax SoC with VexRiscv RISC-V core
-SYN_FILES += vexriscv/Murax.v
+SYN_FILES += app/template/rtl/Murax.v
 
 # Memory initialization files
-MEM_FILES  = vexriscv/Murax.v_toplevel_system_ram_ram_symbol0.bin
-MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol1.bin
-MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol2.bin
-MEM_FILES += vexriscv/Murax.v_toplevel_system_ram_ram_symbol3.bin
+MEM_FILES  = app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol0.bin
+MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol1.bin
+MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol2.bin
+MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol3.bin
 
 # XDC files
 XDC_FILES = fpga.xdc
@@ -114,6 +118,8 @@ XDC_FILES += lib/axi/syn/vivado/axil_cdc.tcl
 XDC_FILES += lib/axis/syn/vivado/axis_async_fifo.tcl
 XDC_FILES += lib/axis/syn/vivado/sync_reset.tcl
 XDC_FILES += lib/eth/syn/vivado/ptp_clock_cdc.tcl
+
+XDC_FILES += app/template/debug.xdc
 
 # IP
 IP_TCL_FILES = ip/pcie4c_uscale_plus_0.tcl

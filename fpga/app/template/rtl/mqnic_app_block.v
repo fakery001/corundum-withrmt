@@ -623,12 +623,33 @@ assign m_axis_stat_tvalid = 1'b0;
 /*
  * GPIO
  */
-assign gpio_out = 0;
+assign gpio_out = { 31'b0, riscv_uart_txd };
+assign riscv_uart_rxd = gpio_in[0];
+
+(* mark_debug = "true", keep = "true" *) wire [31:0] leds;
+(* mark_debug = "true", keep = "true" *) wire riscv_uart_txd;
+(* mark_debug = "true", keep = "true" *) wire riscv_uart_rxd;
 
 /*
- * JTAG
+ * RISC-V
+ *
+ * Murax SoC from VexRiscv project, with two modifications
+ * - coreFrequency set to 250 MHz (to get correct baudrate)
+ * - hardwareBreakpoints set to 3 (to improve debug experience)
  */
-assign jtag_tdo = jtag_tdi;
+Murax murax_inst(
+  .io_asyncReset(rst),
+  .io_mainClk(clk),
+  .io_gpioA_read(32'b0),
+  .io_gpioA_write(leds),
+  .io_gpioA_writeEnable(),
+  .io_uart_txd(riscv_uart_txd),
+  .io_uart_rxd(riscv_uart_rxd),
+  .io_jtag_tck(jtag_tck),
+  .io_jtag_tms(jtag_tms),
+  .io_jtag_tdo(jtag_tdo),
+  .io_jtag_tdi(jtag_tdi)
+);
 
 endmodule
 

@@ -93,6 +93,10 @@ create_project.tcl: Makefile $(XCI_FILES_REL) $(IP_TCL_FILES_REL)
 	echo "add_files -fileset sources_1 defines.v $(MEM_FILES_REL)" >> $@
 	for x in $(MEM_FILES_REL); do echo 'set_property "file_type" "Memory Initialization Files"' [get_files $$x] >> $@; done
 
+# convenience when adding ILAs from the "Setup Debug" in GUI.
+# touch $(TARGET_CONSTRAINTS_FILE)
+# echo 'set_property "target_constrs_file" $(TARGET_CONSTRAINTS_FILE)' >> $@
+
 update_config.tcl: $(CONFIG_TCL_FILES_REL) $(SYN_FILES_REL) $(INC_FILES_REL) $(XDC_FILES_REL)
 	echo "open_project -quiet $(FPGA_TOP).xpr" > $@
 	for x in $(CONFIG_TCL_FILES_REL); do echo "source $$x" >> $@; done

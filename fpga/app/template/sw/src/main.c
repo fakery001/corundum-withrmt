@@ -37,7 +37,7 @@ void main() {
     const int nloops = 2000000;
     while (1) {
         uint32_t timer_value = TIMER_A->VALUE;
-        println("Hello world! Time = 0x%08x (%u)\n", (int)timer_value, (int)timer_value);
+        println("Hello world!\n");
         for(unsigned int i=0;i<nleds-1;i++){
             GPIO_A->OUTPUT = 1<<i;
             delay(nloops);

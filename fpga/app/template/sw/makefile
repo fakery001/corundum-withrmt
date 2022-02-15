@@ -1,5 +1,8 @@
 PROJ_NAME=hello_world
 
+# The host system with the PCIe endpoint running Corundum
+# with the PCIe Ext Cap XVC to JTAG enabled. That host system
+# should be running the VexRiscv-specific OpenOCD GDB server.
 REMOTE=192.168.1.50:3333
 
 DEBUG=yes
@@ -90,7 +93,9 @@ OBJS := $(OBJS:..=miaou)
 OBJS := $(addprefix $(OBJDIR)/,$(OBJS))
 
 
-all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).v $(OBJDIR)/$(PROJ_NAME).mif
+all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm
+#$(OBJDIR)/$(PROJ_NAME).mif
+#$(OBJDIR)/$(PROJ_NAME).v
 
 $(OBJDIR)/%.elf: $(OBJS) | $(OBJDIR)
 	$(RISCV_CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(LIBSINC) $(LIBS)
@@ -141,7 +146,7 @@ clean-all : clean
 
 .SECONDARY: $(OBJS)
 
-# Debug th e program using GDB, which starts OpenOCD (0.11.0+ required) with GDB pipe
+# Debug the program using GDB, which starts OpenOCD (0.11.0+ required) with GDB pipe
 debug: $(OBJDIR)/$(PROJ_NAME).elf
 	$(RISCV_GDB) \
 	-ex "set remotetimeout 3" \
@@ -155,9 +160,10 @@ debug: $(OBJDIR)/$(PROJ_NAME).elf
 	-ex "echo >>> GDB will break at main. Type 'next' <enter> to proceed to the next C line. <<<\\n" \
 	-ex "echo \\n" \
 	-ex "break main" \
-	-ex "cont" \
-	-ex "next" \
 	build/$(PROJ_NAME).elf
+
+#	-ex "cont" \
+#	-ex "next" \
 
 # Upload the program using GDB. Useful make target task for IDEs.
 .PHONY: upload-debug-build

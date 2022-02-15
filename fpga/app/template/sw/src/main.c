@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "murax.h"
+#include "finka.h"
 
 void print(const char*str){
     while(*str){
@@ -36,13 +36,17 @@ void main() {
     const int nleds = 4;
     const int nloops = 2000000;
     while (1) {
-        println("Hello world!");
+        uint32_t timer_value = TIMER_A->VALUE;
+        println("Hello world! Time = 0x%08x (%u)\n", (int)timer_value, (int)timer_value);
         for(unsigned int i=0;i<nleds-1;i++){
             GPIO_A->OUTPUT = 1<<i;
             delay(nloops);
         }
         for(unsigned int i=0;i<nleds-1;i++){
             GPIO_A->OUTPUT = (1<<(nleds-1))>>i;
+            *AXI_A = 0xABCDEF12;
+            *AXI_A = 0xABCDEF34;
+            *AXI_A = 0xABCDEF56;
             delay(nloops);
         }
     }

@@ -26,7 +26,7 @@ SIFIVE_GCC_PACK ?= yes
 
 ifeq ($(SIFIVE_GCC_PACK),yes)
 	RISCV_NAME ?= riscv64-unknown-elf
-	RISCV_PATH ?= /opt/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/
+	RISCV_PATH ?= ./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/
 #/opt/riscv/
 else
 	RISCV_NAME ?= riscv32-unknown-elf
@@ -93,7 +93,7 @@ OBJS := $(OBJS:..=miaou)
 OBJS := $(addprefix $(OBJDIR)/,$(OBJS))
 
 
-all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm
+all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm toolchain
 #$(OBJDIR)/$(PROJ_NAME).mif
 #$(OBJDIR)/$(PROJ_NAME).v
 
@@ -174,4 +174,9 @@ upload-debug-build: $(OBJDIR)/$(PROJ_NAME).elf
 	-ex "monitor reset halt" \
 	-ex "load" \
 	build/$(PROJ_NAME).elf
+
+.PHONY: toolchain
+toolchain:
+	mkdir -p local
+	curl --output - https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6.tar.gz | tar xz -C ./local
 

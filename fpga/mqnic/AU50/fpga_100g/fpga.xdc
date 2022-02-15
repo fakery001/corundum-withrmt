@@ -17,13 +17,12 @@ set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR YES       [current_design]
 set_operating_conditions -design_power_budget 63
 
 # PCIe XVC JTAG
-create_clock -period 50.000 -name tck -waveform {0.000 25.000} [get_pins */xvc_vsec_i/tap_tck]
-#set_output_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tdo]
-set_input_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tdi]
-set_input_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tms]
-
-set_false_path -from [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]] -to [get_clocks tck]
-set_false_path -from [get_clocks tck] -to [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]]
+#create_clock -period 50.000 -name tck -waveform {0.000 25.000} [get_pins */xvc_vsec_i/tap_tck]
+##set_output_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tdo]
+#set_input_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tdi]
+#set_input_delay 15 -clock_fall -clock [get_clocks tck] [get_pins */xvc_vsec_i/tap_tms]
+#set_false_path -from [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]] -to [get_clocks tck]
+#set_false_path -from [get_clocks tck] -to [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]]
 
 # System clocks
 # 100 MHz

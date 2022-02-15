@@ -101,14 +101,19 @@ SYN_FILES += lib/pcie/rtl/pulse_merge.v
 SYN_FILES += app/template/rtl/mqnic_app_block.v
 SYN_FILES += lib/axi/rtl/axil_ram.v
 
-# Murax SoC with VexRiscv RISC-V core
-SYN_FILES += app/template/rtl/Murax.v
+# Finka SoC with VexRiscv RISC-V core
+SYN_FILES += app/template/rtl/Finka.v
+# Finka AXI4 master connects to AXI4 RAM slave
+SYN_FILES += lib/axi/rtl/axi_ram.v
+
+# (input.*)(io_axi4.*[^,]),
+# .$2(0), // $1
 
 # Memory initialization files
-MEM_FILES  = app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol0.bin
-MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol1.bin
-MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol2.bin
-MEM_FILES += app/template/rtl/Murax.v_toplevel_system_ram_ram_symbol3.bin
+MEM_FILES  = app/template/rtl/Finka.v_toplevel_axi_ram_ram_symbol0.bin
+MEM_FILES += app/template/rtl/Finka.v_toplevel_axi_ram_ram_symbol1.bin
+MEM_FILES += app/template/rtl/Finka.v_toplevel_axi_ram_ram_symbol2.bin
+MEM_FILES += app/template/rtl/Finka.v_toplevel_axi_ram_ram_symbol3.bin
 
 # XDC files
 XDC_FILES = fpga.xdc

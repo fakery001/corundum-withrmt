@@ -128,24 +128,36 @@ module mqnic_app_block #
     /*
      * AXI-Lite slave interface (control from host)
      */
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [AXIL_APP_CTRL_ADDR_WIDTH-1:0]            s_axil_app_ctrl_awaddr,
     input  wire [2:0]                                     s_axil_app_ctrl_awprot,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           s_axil_app_ctrl_awvalid,
+    (* mark_debug = "true", keep = "true" *) 
     output wire                                           s_axil_app_ctrl_awready,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [AXIL_APP_CTRL_DATA_WIDTH-1:0]            s_axil_app_ctrl_wdata,
     input  wire [AXIL_APP_CTRL_STRB_WIDTH-1:0]            s_axil_app_ctrl_wstrb,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           s_axil_app_ctrl_wvalid,
+    (* mark_debug = "true", keep = "true" *) 
     output wire                                           s_axil_app_ctrl_wready,
     output wire [1:0]                                     s_axil_app_ctrl_bresp,
     output wire                                           s_axil_app_ctrl_bvalid,
     input  wire                                           s_axil_app_ctrl_bready,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [AXIL_APP_CTRL_ADDR_WIDTH-1:0]            s_axil_app_ctrl_araddr,
     input  wire [2:0]                                     s_axil_app_ctrl_arprot,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           s_axil_app_ctrl_arvalid,
+    (* mark_debug = "true", keep = "true" *) 
     output wire                                           s_axil_app_ctrl_arready,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [AXIL_APP_CTRL_DATA_WIDTH-1:0]            s_axil_app_ctrl_rdata,
     output wire [1:0]                                     s_axil_app_ctrl_rresp,
+    (* mark_debug = "true", keep = "true" *) 
     output wire                                           s_axil_app_ctrl_rvalid,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           s_axil_app_ctrl_rready,
 
     /*
@@ -450,6 +462,7 @@ module mqnic_app_block #
     input  wire                                           jtag_tck
 );
 
+`ifdef UNDEFINED // the control AXI4-Lite interface now goes into the Finka SoC */
 /*
  * AXI-Lite slave interface (control from host)
  */
@@ -483,6 +496,7 @@ ram_inst (
     .s_axil_rvalid(s_axil_app_ctrl_rvalid),
     .s_axil_rready(s_axil_app_ctrl_rready)
 );
+`endif
 
 /*
  * AXI-Lite master interface (control to NIC)
@@ -694,39 +708,61 @@ Finka finka_inst(
   .io_jtag_tms(jtag_tms),
   .io_jtag_tdo(jtag_tdo),
   .io_jtag_tdi(jtag_tdi),
-  .io_axi4master_aw_valid(ram_awvalid), // output              
-  .io_axi4master_aw_ready(ram_awready), // input               
-  .io_axi4master_aw_payload_addr(ram_awaddr), // output     [31:0]   
-  .io_axi4master_aw_payload_id(ram_awid), // output     [0:0]    
-  .io_axi4master_aw_payload_len(ram_awlen), // output     [7:0]    
-  .io_axi4master_aw_payload_size(ram_awsize), // output     [2:0]    
-  .io_axi4master_aw_payload_burst(ram_awburst), // output     [1:0]    
-  .io_axi4master_aw_payload_cache(ram_awcache), // output     [3:0]    
-  .io_axi4master_aw_payload_prot(ram_awprot), // output     [2:0]    
-  .io_axi4master_w_valid(ram_wvalid), // output              
-  .io_axi4master_w_ready(ram_wready), // input               
-  .io_axi4master_w_payload_data(ram_wdata), // output     [31:0]   
-  .io_axi4master_w_payload_strb(ram_wstrb), // output     [3:0]    
-  .io_axi4master_w_payload_last(ram_wlast), // output              
-  .io_axi4master_b_valid(ram_bvalid), // input               
-  .io_axi4master_b_ready(ram_bready), // output              
-  .io_axi4master_b_payload_id(ram_bid), // input      [0:0]    
-  .io_axi4master_b_payload_resp(ram_bresp), // input      [1:0]    
-  .io_axi4master_ar_valid(ram_arvalid), // output              
-  .io_axi4master_ar_ready(ram_arready), // input               
-  .io_axi4master_ar_payload_addr(ram_araddr), // output     [31:0]   
-  .io_axi4master_ar_payload_id(ram_arid), // output     [0:0]    
-  .io_axi4master_ar_payload_len(ram_arlen), // output     [7:0]    
-  .io_axi4master_ar_payload_size(ram_arsize), // output     [2:0]    
-  .io_axi4master_ar_payload_burst(ram_arburst), // output     [1:0]    
-  .io_axi4master_ar_payload_cache(ram_arcache), // output     [3:0]    
-  .io_axi4master_ar_payload_prot(ram_arprot), // output     [2:0]    
-  .io_axi4master_r_valid(ram_rvalid), // input               
-  .io_axi4master_r_ready(ram_rready), // output              
-  .io_axi4master_r_payload_data(ram_rdata), // input      [31:0]   
-  .io_axi4master_r_payload_id(ram_rid), // input      [0:0]    
-  .io_axi4master_r_payload_resp(ram_rresp), // input      [1:0]    
-  .io_axi4master_r_payload_last(ram_rlast) // input               
+  .extAxi4Master_awvalid(ram_awvalid), // output              
+  .extAxi4Master_awready(ram_awready), // input               
+  .extAxi4Master_awaddr(ram_awaddr), // output     [31:0]   
+  .extAxi4Master_awid(ram_awid), // output     [1:0]    
+  .extAxi4Master_awlen(ram_awlen), // output     [7:0]    
+  .extAxi4Master_awsize(ram_awsize), // output     [2:0]    
+  .extAxi4Master_awburst(ram_awburst), // output     [1:0]    
+  .extAxi4Master_awcache(ram_awcache), // output     [3:0]    
+  .extAxi4Master_awprot(ram_awprot), // output     [2:0]    
+  .extAxi4Master_wvalid(ram_wvalid), // output              
+  .extAxi4Master_wready(ram_wready), // input               
+  .extAxi4Master_wdata(ram_wdata), // output     [31:0]   
+  .extAxi4Master_wstrb(ram_wstrb), // output     [3:0]    
+  .extAxi4Master_wlast(ram_wlast), // output              
+  .extAxi4Master_bvalid(ram_bvalid), // input               
+  .extAxi4Master_bready(ram_bready), // output              
+  .extAxi4Master_bid(ram_bid), // input      [1:0]    
+  .extAxi4Master_bresp(ram_bresp), // input      [1:0]    
+  .extAxi4Master_arvalid(ram_arvalid), // output              
+  .extAxi4Master_arready(ram_arready), // input               
+  .extAxi4Master_araddr(ram_araddr), // output     [31:0]   
+  .extAxi4Master_arid(ram_arid), // output     [1:0]    
+  .extAxi4Master_arlen(ram_arlen), // output     [7:0]    
+  .extAxi4Master_arsize(ram_arsize), // output     [2:0]    
+  .extAxi4Master_arburst(ram_arburst), // output     [1:0]    
+  .extAxi4Master_arcache(ram_arcache), // output     [3:0]    
+  .extAxi4Master_arprot(ram_arprot), // output     [2:0]    
+  .extAxi4Master_rvalid(ram_rvalid), // input               
+  .extAxi4Master_rready(ram_rready), // output              
+  .extAxi4Master_rdata(ram_rdata), // input      [31:0]   
+  .extAxi4Master_rid(ram_rid), // input      [1:0]    
+  .extAxi4Master_rresp(ram_rresp), // input      [1:0]    
+  .extAxi4Master_rlast(ram_rlast), // input               
+
+  .pcieAxi4Slave_awvalid(s_axil_app_ctrl_awvalid),
+  .pcieAxi4Slave_awready(s_axil_app_ctrl_awready),
+  .pcieAxi4Slave_awaddr(s_axil_app_ctrl_awaddr),
+  .pcieAxi4Slave_awprot(s_axil_app_ctrl_awprot),
+  .pcieAxi4Slave_wvalid(s_axil_app_ctrl_wvalid),
+  .pcieAxi4Slave_wready(s_axil_app_ctrl_wready),
+  .pcieAxi4Slave_wdata(s_axil_app_ctrl_wdata),
+  .pcieAxi4Slave_wstrb(s_axil_app_ctrl_wstrb),
+  .pcieAxi4Slave_wlast(s_axil_app_ctrl_wvalid/*use valid as last for AXI4-Lite, always single beat, no burst*/),
+  .pcieAxi4Slave_bvalid(s_axil_app_ctrl_bvalid),
+  .pcieAxi4Slave_bready(s_axil_app_ctrl_bready),
+  .pcieAxi4Slave_bresp(s_axil_app_ctrl_bresp),
+  .pcieAxi4Slave_arvalid(s_axil_app_ctrl_arvalid),
+  .pcieAxi4Slave_arready(s_axil_app_ctrl_arready),
+  .pcieAxi4Slave_araddr(s_axil_app_ctrl_araddr),
+  .pcieAxi4Slave_arprot(s_axil_app_ctrl_arprot),
+  .pcieAxi4Slave_rvalid(s_axil_app_ctrl_rvalid),
+  .pcieAxi4Slave_rready(s_axil_app_ctrl_rready),
+  .pcieAxi4Slave_rdata(s_axil_app_ctrl_rdata),
+  .pcieAxi4Slave_rresp(s_axil_app_ctrl_rresp),
+  .pcieAxi4Slave_rlast(/*ignore, AXI4-Lite always assumes single beat, no burst*/)
 );
 
 /* not used as program memory, just an AXI4 test slave */

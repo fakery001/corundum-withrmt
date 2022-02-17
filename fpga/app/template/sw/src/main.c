@@ -21,6 +21,12 @@ void delay(uint32_t loops){
 }
 
 void main() {
+
+    TIMER_PRESCALER->LIMIT = 7;
+    timer_init(TIMER_A);
+    TIMER_A->LIMIT = 12;
+    TIMER_A->CLEARS_TICKS = 1;
+
     Uart_Config uartConfig;
     uartConfig.dataLength = 8;
     uartConfig.parity = NONE;
@@ -31,6 +37,8 @@ void main() {
 
     GPIO_A->OUTPUT_ENABLE = 0x0000000F;
     GPIO_A->OUTPUT = 0x00000001;
+
+
 
     println("Hello world!");
     const int nleds = 4;

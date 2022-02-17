@@ -462,7 +462,10 @@ module mqnic_app_block #
     input  wire                                           jtag_tck
 );
 
-`ifdef UNDEFINED // the control AXI4-Lite interface now goes into the Finka SoC */
+// if commented out (not defined) the PCIe control AXI4-Lite interface
+// goes into the Finka SoC crossbar, see further below */
+//`define BAR2_TO_RAM 1
+`ifdef BAR2_TO_RAM
 /*
  * AXI-Lite slave interface (control from host)
  */
@@ -741,7 +744,29 @@ Finka finka_inst(
   .extAxi4Master_rid(ram_rid), // input      [1:0]    
   .extAxi4Master_rresp(ram_rresp), // input      [1:0]    
   .extAxi4Master_rlast(ram_rlast), // input               
-
+`ifdef BAR2_TO_RAM
+  .pcieAxi4Slave_awvalid(0),
+  .pcieAxi4Slave_awready(),
+  .pcieAxi4Slave_awaddr(0),
+  .pcieAxi4Slave_awprot(0),
+  .pcieAxi4Slave_wvalid(0),
+  .pcieAxi4Slave_wready(),
+  .pcieAxi4Slave_wdata(0),
+  .pcieAxi4Slave_wstrb(0),
+  .pcieAxi4Slave_wlast(0),
+  .pcieAxi4Slave_bvalid(),
+  .pcieAxi4Slave_bready(0),
+  .pcieAxi4Slave_bresp(),
+  .pcieAxi4Slave_arvalid(0),
+  .pcieAxi4Slave_arready(),
+  .pcieAxi4Slave_araddr(0),
+  .pcieAxi4Slave_arprot(0),
+  .pcieAxi4Slave_rvalid(),
+  .pcieAxi4Slave_rready(0),
+  .pcieAxi4Slave_rdata(),
+  .pcieAxi4Slave_rresp(),
+  .pcieAxi4Slave_rlast()
+`else
   .pcieAxi4Slave_awvalid(s_axil_app_ctrl_awvalid),
   .pcieAxi4Slave_awready(s_axil_app_ctrl_awready),
   .pcieAxi4Slave_awaddr(s_axil_app_ctrl_awaddr),
@@ -763,6 +788,7 @@ Finka finka_inst(
   .pcieAxi4Slave_rdata(s_axil_app_ctrl_rdata),
   .pcieAxi4Slave_rresp(s_axil_app_ctrl_rresp),
   .pcieAxi4Slave_rlast(/*ignore, AXI4-Lite always assumes single beat, no burst*/)
+`endif
 );
 
 /* not used as program memory, just an AXI4 test slave */

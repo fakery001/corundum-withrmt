@@ -176,7 +176,9 @@ upload-debug-build: $(OBJDIR)/$(PROJ_NAME).elf
 	build/$(PROJ_NAME).elf
 
 .PHONY: toolchain
-toolchain:
+toolchain: ./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/bin/riscv64-unknown-elf-gcc
+
+./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/bin/riscv64-unknown-elf-gcc:
 	mkdir -p local
 	curl --output - https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6.tar.gz | tar xz -C ./local
 

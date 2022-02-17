@@ -26,6 +26,10 @@
             "miDebuggerPath": "${workspaceFolder}/local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/bin/riscv64-unknown-elf-gdb",
             // --- !!! --- CHANGE HOST IP TO THAT OF HOST WITH CORUNDUM PCIe AND RUNNING OPENOCD GDB SERVER --- !!! ---
             "miDebuggerServerAddress": "192.168.1.50:3333",
+            "hardwareBreakpoints": {
+                "require": false,
+                "limit": 3
+            }
         }
     ]
 }

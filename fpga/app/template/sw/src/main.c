@@ -21,7 +21,10 @@ void delay(uint32_t loops){
 }
 
 void main() {
-
+    uint32_t i = 0;
+	while (1) {
+		*AXI_M1 = i++;
+	}
     TIMER_PRESCALER->LIMIT = 7;
     timer_init(TIMER_A);
     TIMER_A->LIMIT = 12;
@@ -52,9 +55,9 @@ void main() {
         }
         for(unsigned int i=0;i<nleds-1;i++){
             GPIO_A->OUTPUT = (1<<(nleds-1))>>i;
-            *AXI_A = 0xABCDEF12;
-            *AXI_A = 0xABCDEF34;
-            *AXI_A = 0xABCDEF56;
+            *AXI_M1 = 0xABCDEF12;
+            *AXI_M1 = 0xABCDEF34;
+            *AXI_M1 = 0xABCDEF56;
             delay(nloops);
         }
     }

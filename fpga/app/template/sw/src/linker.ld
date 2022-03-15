@@ -10,6 +10,7 @@ OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv", "elf32-littleriscv")
 OUTPUT_ARCH(riscv)
 ENTRY(crtStart)
 
+/* manually keep this in sync with SpinalHDL Facet.scala source */
 MEMORY {
   RAM      (rwx): ORIGIN = 0x00800000, LENGTH = 64k
 }

@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "finka.h"
+#include "facet.h"
 
 void print(const char*str){
     while(*str){
@@ -22,7 +22,7 @@ void delay(uint32_t loops){
 
 void main() {
     uint32_t i = 0;
-	while (1) {
+	while (0) {
 		*AXI_M1 = i++;
 	}
     TIMER_PRESCALER->LIMIT = 7;

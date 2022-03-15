@@ -93,7 +93,7 @@ OBJS := $(OBJS:..=miaou)
 OBJS := $(addprefix $(OBJDIR)/,$(OBJS))
 
 
-all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm toolchain
+all: $(OBJDIR)/$(PROJ_NAME).elf $(OBJDIR)/$(PROJ_NAME).hex $(OBJDIR)/$(PROJ_NAME).asm $(OBJDIR)/$(PROJ_NAME).bin toolchain
 #$(OBJDIR)/$(PROJ_NAME).mif
 #$(OBJDIR)/$(PROJ_NAME).v
 

@@ -1,10 +1,10 @@
-// Generator : SpinalHDL v1.6.2    git head : 6f25d9a541c42028018402843d80c1b0948f0d13
-// Component : Finka
-// Git hash  : fd8dde93f922fc812a56d3b53a2b1098901e871a
+// Generator : SpinalHDL v1.6.4    git head : 598c18959149eb18e5eee5b0aa3eef01ecaa41a1
+// Component : Facet
+// Git hash  : eea03646149c3cdc0d89e8c6c974a6b909029732
 
 `timescale 1ns/1ps 
 
-module Finka (
+module Facet (
   input               io_asyncReset,
   input               io_axiClk,
   input               io_jtag_tms,
@@ -427,9 +427,9 @@ module Finka (
   wire       [2:0]    _zz_dbus_axi_arw_payload_len;
   reg                 resetCtrl_systemResetUnbuffered;
   reg        [5:0]    resetCtrl_systemResetCounter;
-  wire       [5:0]    _zz_when_Finka_l218;
-  wire                when_Finka_l218;
-  wire                when_Finka_l222;
+  wire       [5:0]    _zz_when_Facet_l222;
+  wire                when_Facet_l222;
+  wire                when_Facet_l226;
   reg                 resetCtrl_systemReset;
   reg                 resetCtrl_axiReset;
   wire                axi_extAxiSharedBus_arw_valid;
@@ -1527,14 +1527,14 @@ module Finka (
 
   always @(*) begin
     resetCtrl_systemResetUnbuffered = 1'b0;
-    if(when_Finka_l218) begin
+    if(when_Facet_l222) begin
       resetCtrl_systemResetUnbuffered = 1'b1;
     end
   end
 
-  assign _zz_when_Finka_l218[5 : 0] = 6'h3f;
-  assign when_Finka_l218 = (resetCtrl_systemResetCounter != _zz_when_Finka_l218);
-  assign when_Finka_l222 = io_asyncReset_buffercc_io_dataOut;
+  assign _zz_when_Facet_l222[5 : 0] = 6'h3f;
+  assign when_Facet_l222 = (resetCtrl_systemResetCounter != _zz_when_Facet_l222);
+  assign when_Facet_l226 = io_asyncReset_buffercc_io_dataOut;
   assign axi_pcieAxi4Bus_ar_ready = streamArbiter_4_io_inputs_0_ready;
   assign axi_pcieAxi4Bus_aw_ready = streamArbiter_4_io_inputs_1_ready;
   assign axi_pcieAxiSharedBus_arw_valid = streamArbiter_4_io_output_valid;
@@ -1951,10 +1951,10 @@ module Finka (
   assign pcieAxi4Slave_rresp = axi_pcieAxi4Bus_r_payload_resp;
   assign pcieAxi4Slave_rlast = axi_pcieAxi4Bus_r_payload_last;
   always @(posedge io_axiClk) begin
-    if(when_Finka_l218) begin
+    if(when_Facet_l222) begin
       resetCtrl_systemResetCounter <= (resetCtrl_systemResetCounter + 6'h01);
     end
-    if(when_Finka_l222) begin
+    if(when_Facet_l226) begin
       resetCtrl_systemResetCounter <= 6'h0;
     end
   end
@@ -2594,23 +2594,15 @@ module Axi4SharedArbiter_2 (
 
   always @(*) begin
     case(writeLogic_writeRspIndex)
-      1'b0 : begin
-        _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
-      end
-      default : begin
-        _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
-      end
+      1'b0 : _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
+      default : _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
     endcase
   end
 
   always @(*) begin
     case(readRspIndex)
-      1'b0 : begin
-        _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
-      end
-      default : begin
-        _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
-      end
+      1'b0 : _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
+      default : _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
     endcase
   end
 
@@ -3006,23 +2998,15 @@ module Axi4SharedArbiter_1 (
 
   always @(*) begin
     case(writeLogic_writeRspIndex)
-      1'b0 : begin
-        _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
-      end
-      default : begin
-        _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
-      end
+      1'b0 : _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
+      default : _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
     endcase
   end
 
   always @(*) begin
     case(readRspIndex)
-      1'b0 : begin
-        _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
-      end
-      default : begin
-        _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
-      end
+      1'b0 : _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
+      default : _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
     endcase
   end
 
@@ -3420,26 +3404,16 @@ module Axi4SharedArbiter (
 
   always @(*) begin
     case(writeLogic_writeRspIndex)
-      1'b0 : begin
-        _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
-      end
-      default : begin
-        _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
-      end
+      1'b0 : _zz_io_output_b_ready = io_sharedInputs_0_b_ready;
+      default : _zz_io_output_b_ready = io_sharedInputs_1_b_ready;
     endcase
   end
 
   always @(*) begin
     case(readRspIndex)
-      2'b00 : begin
-        _zz_io_output_r_ready = io_readInputs_0_r_ready;
-      end
-      2'b01 : begin
-        _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
-      end
-      default : begin
-        _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
-      end
+      2'b00 : _zz_io_output_r_ready = io_readInputs_0_r_ready;
+      2'b01 : _zz_io_output_r_ready = io_sharedInputs_0_r_ready;
+      default : _zz_io_output_r_ready = io_sharedInputs_1_r_ready;
     endcase
   end
 
@@ -3708,15 +3682,9 @@ module Axi4SharedDecoder_1 (
   );
   always @(*) begin
     case(writeRspIndex)
-      2'b00 : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_0_b_payload_resp;
-      end
-      2'b01 : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_1_b_payload_resp;
-      end
-      default : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_2_b_payload_resp;
-      end
+      2'b00 : _zz_io_input_b_payload_resp = io_sharedOutputs_0_b_payload_resp;
+      2'b01 : _zz_io_input_b_payload_resp = io_sharedOutputs_1_b_payload_resp;
+      default : _zz_io_input_b_payload_resp = io_sharedOutputs_2_b_payload_resp;
     endcase
   end
 
@@ -4071,15 +4039,9 @@ module Axi4SharedDecoder (
   );
   always @(*) begin
     case(writeRspIndex)
-      2'b00 : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_0_b_payload_resp;
-      end
-      2'b01 : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_1_b_payload_resp;
-      end
-      default : begin
-        _zz_io_input_b_payload_resp = io_sharedOutputs_2_b_payload_resp;
-      end
+      2'b00 : _zz_io_input_b_payload_resp = io_sharedOutputs_0_b_payload_resp;
+      2'b01 : _zz_io_input_b_payload_resp = io_sharedOutputs_1_b_payload_resp;
+      default : _zz_io_input_b_payload_resp = io_sharedOutputs_2_b_payload_resp;
     endcase
   end
 
@@ -4937,23 +4899,23 @@ module StreamFork_3 (
 
   reg                 _zz_io_outputs_0_valid;
   reg                 _zz_io_outputs_1_valid;
-  wire                when_Stream_l817;
-  wire                when_Stream_l817_1;
+  wire                when_Stream_l825;
+  wire                when_Stream_l825_1;
   wire                io_outputs_0_fire;
   wire                io_outputs_1_fire;
 
   always @(*) begin
     io_input_ready = 1'b1;
-    if(when_Stream_l817) begin
+    if(when_Stream_l825) begin
       io_input_ready = 1'b0;
     end
-    if(when_Stream_l817_1) begin
+    if(when_Stream_l825_1) begin
       io_input_ready = 1'b0;
     end
   end
 
-  assign when_Stream_l817 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
-  assign when_Stream_l817_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
+  assign when_Stream_l825 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
+  assign when_Stream_l825_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
   assign io_outputs_0_valid = (io_input_valid && _zz_io_outputs_0_valid);
   assign io_outputs_0_payload_wr = io_input_payload_wr;
   assign io_outputs_0_payload_uncached = io_input_payload_uncached;
@@ -6618,46 +6580,26 @@ module VexRiscv (
   );
   always @(*) begin
     case(_zz_IBusCachedPlugin_jump_pcLoad_payload_6)
-      2'b00 : begin
-        _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = DBusCachedPlugin_redoBranch_payload;
-      end
-      2'b01 : begin
-        _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = CsrPlugin_jumpInterface_payload;
-      end
-      2'b10 : begin
-        _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = BranchPlugin_jumpInterface_payload;
-      end
-      default : begin
-        _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = IBusCachedPlugin_predictionJumpInterface_payload;
-      end
+      2'b00 : _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = DBusCachedPlugin_redoBranch_payload;
+      2'b01 : _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = CsrPlugin_jumpInterface_payload;
+      2'b10 : _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = BranchPlugin_jumpInterface_payload;
+      default : _zz_IBusCachedPlugin_jump_pcLoad_payload_5 = IBusCachedPlugin_predictionJumpInterface_payload;
     endcase
   end
 
   always @(*) begin
     case(_zz_writeBack_DBusCachedPlugin_rspShifted_1)
-      2'b00 : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_0;
-      end
-      2'b01 : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_1;
-      end
-      2'b10 : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_2;
-      end
-      default : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_3;
-      end
+      2'b00 : _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_0;
+      2'b01 : _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_1;
+      2'b10 : _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_2;
+      default : _zz_writeBack_DBusCachedPlugin_rspShifted = writeBack_DBusCachedPlugin_rspSplits_3;
     endcase
   end
 
   always @(*) begin
     case(_zz_writeBack_DBusCachedPlugin_rspShifted_3)
-      1'b0 : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted_2 = writeBack_DBusCachedPlugin_rspSplits_1;
-      end
-      default : begin
-        _zz_writeBack_DBusCachedPlugin_rspShifted_2 = writeBack_DBusCachedPlugin_rspSplits_3;
-      end
+      1'b0 : _zz_writeBack_DBusCachedPlugin_rspShifted_2 = writeBack_DBusCachedPlugin_rspSplits_1;
+      default : _zz_writeBack_DBusCachedPlugin_rspShifted_2 = writeBack_DBusCachedPlugin_rspSplits_3;
     endcase
   end
 
@@ -9025,7 +8967,7 @@ module VexRiscv (
   assign CsrPlugin_misa_base = 2'b01;
   assign CsrPlugin_misa_extensions = 26'h0000042;
   assign CsrPlugin_mtvec_mode = 2'b00;
-  assign CsrPlugin_mtvec_base = 30'h20000008;
+  assign CsrPlugin_mtvec_base = 30'h00200008;
   assign _zz_when_CsrPlugin_l952 = (CsrPlugin_mip_MTIP && CsrPlugin_mie_MTIE);
   assign _zz_when_CsrPlugin_l952_1 = (CsrPlugin_mip_MSIP && CsrPlugin_mie_MSIE);
   assign _zz_when_CsrPlugin_l952_2 = (CsrPlugin_mip_MEIP && CsrPlugin_mie_MEIE);
@@ -11536,10 +11478,10 @@ module Axi4SharedOnChipRam (
   assign _zz_Axi4Incr_result_11 = Axi4Incr_base[11 : 6];
   assign _zz_Axi4Incr_result_12 = Axi4Incr_baseIncr[5 : 0];
   initial begin
-    $readmemb("Finka.v_toplevel_axi_ram_ram_symbol0.bin",ram_symbol0);
-    $readmemb("Finka.v_toplevel_axi_ram_ram_symbol1.bin",ram_symbol1);
-    $readmemb("Finka.v_toplevel_axi_ram_ram_symbol2.bin",ram_symbol2);
-    $readmemb("Finka.v_toplevel_axi_ram_ram_symbol3.bin",ram_symbol3);
+    $readmemb("Facet.v_toplevel_axi_ram_ram_symbol0.bin",ram_symbol0);
+    $readmemb("Facet.v_toplevel_axi_ram_ram_symbol1.bin",ram_symbol1);
+    $readmemb("Facet.v_toplevel_axi_ram_ram_symbol2.bin",ram_symbol2);
+    $readmemb("Facet.v_toplevel_axi_ram_ram_symbol3.bin",ram_symbol3);
   end
   always @(*) begin
     _zz_ram_port0 = {_zz_ramsymbol_read_3, _zz_ramsymbol_read_2, _zz_ramsymbol_read_1, _zz_ramsymbol_read};
@@ -11570,24 +11512,12 @@ module Axi4SharedOnChipRam (
 
   always @(*) begin
     case(Axi4Incr_wrapCase)
-      3'b000 : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_1,_zz_Axi4Incr_result_2};
-      end
-      3'b001 : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_3,_zz_Axi4Incr_result_4};
-      end
-      3'b010 : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_5,_zz_Axi4Incr_result_6};
-      end
-      3'b011 : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_7,_zz_Axi4Incr_result_8};
-      end
-      3'b100 : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_9,_zz_Axi4Incr_result_10};
-      end
-      default : begin
-        _zz_Axi4Incr_result = {_zz_Axi4Incr_result_11,_zz_Axi4Incr_result_12};
-      end
+      3'b000 : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_1,_zz_Axi4Incr_result_2};
+      3'b001 : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_3,_zz_Axi4Incr_result_4};
+      3'b010 : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_5,_zz_Axi4Incr_result_6};
+      3'b011 : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_7,_zz_Axi4Incr_result_8};
+      3'b100 : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_9,_zz_Axi4Incr_result_10};
+      default : _zz_Axi4Incr_result = {_zz_Axi4Incr_result_11,_zz_Axi4Incr_result_12};
     endcase
   end
 
@@ -11839,23 +11769,23 @@ module StreamFork_2 (
 
   reg                 _zz_io_outputs_0_valid;
   reg                 _zz_io_outputs_1_valid;
-  wire                when_Stream_l817;
-  wire                when_Stream_l817_1;
+  wire                when_Stream_l825;
+  wire                when_Stream_l825_1;
   wire                io_outputs_0_fire;
   wire                io_outputs_1_fire;
 
   always @(*) begin
     io_input_ready = 1'b1;
-    if(when_Stream_l817) begin
+    if(when_Stream_l825) begin
       io_input_ready = 1'b0;
     end
-    if(when_Stream_l817_1) begin
+    if(when_Stream_l825_1) begin
       io_input_ready = 1'b0;
     end
   end
 
-  assign when_Stream_l817 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
-  assign when_Stream_l817_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
+  assign when_Stream_l825 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
+  assign when_Stream_l825_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
   assign io_outputs_0_valid = (io_input_valid && _zz_io_outputs_0_valid);
   assign io_outputs_0_payload_addr = io_input_payload_addr;
   assign io_outputs_0_payload_id = io_input_payload_id;
@@ -12029,23 +11959,23 @@ module StreamFork_1 (
 
   reg                 _zz_io_outputs_0_valid;
   reg                 _zz_io_outputs_1_valid;
-  wire                when_Stream_l817;
-  wire                when_Stream_l817_1;
+  wire                when_Stream_l825;
+  wire                when_Stream_l825_1;
   wire                io_outputs_0_fire;
   wire                io_outputs_1_fire;
 
   always @(*) begin
     io_input_ready = 1'b1;
-    if(when_Stream_l817) begin
+    if(when_Stream_l825) begin
       io_input_ready = 1'b0;
     end
-    if(when_Stream_l817_1) begin
+    if(when_Stream_l825_1) begin
       io_input_ready = 1'b0;
     end
   end
 
-  assign when_Stream_l817 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
-  assign when_Stream_l817_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
+  assign when_Stream_l825 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
+  assign when_Stream_l825_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
   assign io_outputs_0_valid = (io_input_valid && _zz_io_outputs_0_valid);
   assign io_outputs_0_payload_addr = io_input_payload_addr;
   assign io_outputs_0_payload_id = io_input_payload_id;
@@ -12234,8 +12164,8 @@ module StreamFifoLowLatency (
   wire                pushing;
   wire                popping;
   wire       [0:0]    readed;
-  wire                when_Stream_l1011;
-  wire                when_Stream_l1024;
+  wire                when_Stream_l1019;
+  wire                when_Stream_l1032;
   wire       [1:0]    ptrDif;
   (* ram_style = "distributed" *) reg [0:0] ram [0:3];
 
@@ -12311,9 +12241,9 @@ module StreamFifoLowLatency (
   assign popping = (io_pop_valid && io_pop_ready);
   assign io_push_ready = (! full);
   assign readed = _zz_ram_port0;
-  assign when_Stream_l1011 = (! empty);
+  assign when_Stream_l1019 = (! empty);
   always @(*) begin
-    if(when_Stream_l1011) begin
+    if(when_Stream_l1019) begin
       io_pop_valid = 1'b1;
     end else begin
       io_pop_valid = io_push_valid;
@@ -12321,14 +12251,14 @@ module StreamFifoLowLatency (
   end
 
   always @(*) begin
-    if(when_Stream_l1011) begin
+    if(when_Stream_l1019) begin
       io_pop_payload = readed;
     end else begin
       io_pop_payload = io_push_payload;
     end
   end
 
-  assign when_Stream_l1024 = (pushing != popping);
+  assign when_Stream_l1032 = (pushing != popping);
   assign ptrDif = (pushPtr_value - popPtr_value);
   assign io_occupancy = {(risingOccupancy && ptrMatch),ptrDif};
   always @(posedge io_axiClk or posedge resetCtrl_axiReset) begin
@@ -12339,7 +12269,7 @@ module StreamFifoLowLatency (
     end else begin
       pushPtr_value <= pushPtr_valueNext;
       popPtr_value <= popPtr_valueNext;
-      if(when_Stream_l1024) begin
+      if(when_Stream_l1032) begin
         risingOccupancy <= pushing;
       end
       if(io_flush) begin
@@ -12382,23 +12312,23 @@ module StreamFork (
 
   reg                 _zz_io_outputs_0_valid;
   reg                 _zz_io_outputs_1_valid;
-  wire                when_Stream_l817;
-  wire                when_Stream_l817_1;
+  wire                when_Stream_l825;
+  wire                when_Stream_l825_1;
   wire                io_outputs_0_fire;
   wire                io_outputs_1_fire;
 
   always @(*) begin
     io_input_ready = 1'b1;
-    if(when_Stream_l817) begin
+    if(when_Stream_l825) begin
       io_input_ready = 1'b0;
     end
-    if(when_Stream_l817_1) begin
+    if(when_Stream_l825_1) begin
       io_input_ready = 1'b0;
     end
   end
 
-  assign when_Stream_l817 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
-  assign when_Stream_l817_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
+  assign when_Stream_l825 = ((! io_outputs_0_ready) && _zz_io_outputs_0_valid);
+  assign when_Stream_l825_1 = ((! io_outputs_1_ready) && _zz_io_outputs_1_valid);
   assign io_outputs_0_valid = (io_input_valid && _zz_io_outputs_0_valid);
   assign io_outputs_0_payload_addr = io_input_payload_addr;
   assign io_outputs_0_payload_id = io_input_payload_id;
@@ -14067,7 +13997,7 @@ module StreamFifo (
   wire                logic_empty;
   wire                logic_full;
   reg                 _zz_io_pop_valid;
-  wire                when_Stream_l946;
+  wire                when_Stream_l954;
   wire       [3:0]    logic_ptrDif;
   reg [7:0] logic_ram [0:15];
 
@@ -14150,7 +14080,7 @@ module StreamFifo (
   assign io_push_ready = (! logic_full);
   assign io_pop_valid = ((! logic_empty) && (! (_zz_io_pop_valid && (! logic_full))));
   assign io_pop_payload = _zz_logic_ram_port0;
-  assign when_Stream_l946 = (logic_pushing != logic_popping);
+  assign when_Stream_l954 = (logic_pushing != logic_popping);
   assign logic_ptrDif = (logic_pushPtr_value - logic_popPtr_value);
   assign io_occupancy = {(logic_risingOccupancy && logic_ptrMatch),logic_ptrDif};
   assign io_availability = {((! logic_risingOccupancy) && logic_ptrMatch),_zz_io_availability};
@@ -14164,7 +14094,7 @@ module StreamFifo (
       logic_pushPtr_value <= logic_pushPtr_valueNext;
       logic_popPtr_value <= logic_popPtr_valueNext;
       _zz_io_pop_valid <= (logic_popPtr_valueNext == logic_pushPtr_value);
-      if(when_Stream_l946) begin
+      if(when_Stream_l954) begin
         logic_risingOccupancy <= logic_pushing;
       end
       if(io_flush) begin

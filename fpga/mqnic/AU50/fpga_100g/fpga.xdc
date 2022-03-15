@@ -24,6 +24,9 @@ set_operating_conditions -design_power_budget 63
 #set_false_path -from [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]] -to [get_clocks tck]
 #set_false_path -from [get_clocks tck] -to [get_clocks -of_objects [get_pins clk_mmcm_inst/CLKOUT1]]
 
+# Facet SoC introduces a CDC between two identical clocks (BufferCC)
+set_false_path -from [get_pins pcie4c_uscale_plus_inst/inst/pcie4c_uscale_plus_0_gt_top_i/diablo_gt.diablo_gt_phy_wrapper/phy_clk_i/bufg_gt_userclk/O] -to [get_pins core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/facet_inst/axi_timerCtrl/io_external_buffercc/buffers_0_tick_reg/D]
+
 # System clocks
 # 100 MHz
 #set_property -dict {LOC G17 IOSTANDARD LVDS} [get_ports clk_100mhz_0_p]

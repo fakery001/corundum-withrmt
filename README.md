@@ -1,3 +1,8 @@
+# Fork Note
+
+This fork adds an SoC with VexRiscv RISC-V CPU in the app block, but for AU50/fpga_100g/fpga only.
+See fpga/app/template/README for further details.
+
 # Corundum Readme
 
 [![Build Status](https://github.com/corundum/corundum/workflows/Regression%20Tests/badge.svg?branch=master)](https://github.com/corundum/corundum/actions/)

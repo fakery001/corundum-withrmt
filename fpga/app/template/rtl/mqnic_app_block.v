@@ -122,7 +122,9 @@ module mqnic_app_block #
     parameter STAT_ID_WIDTH = 12
 )
 (
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           clk,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire                                           rst,
 
     /*
@@ -305,7 +307,9 @@ module mqnic_app_block #
     /*
      * Ethernet (direct MAC interface - lowest latency raw traffic)
      */
+    (* mark_debug = "true", keep = "true" *)
     input  wire [PORT_COUNT-1:0]                          direct_tx_clk,
+    (* mark_debug = "true", keep = "true" *)
     input  wire [PORT_COUNT-1:0]                          direct_tx_rst,
 
     input  wire [PORT_COUNT*AXIS_DATA_WIDTH-1:0]          s_axis_direct_tx_tdata,
@@ -332,7 +336,9 @@ module mqnic_app_block #
     output wire [PORT_COUNT-1:0]                          m_axis_direct_tx_ptp_ts_valid,
     input  wire [PORT_COUNT-1:0]                          m_axis_direct_tx_ptp_ts_ready,
 
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          direct_rx_clk,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          direct_rx_rst,
 
     input  wire [PORT_COUNT*AXIS_DATA_WIDTH-1:0]          s_axis_direct_rx_tdata,

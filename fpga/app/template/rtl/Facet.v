@@ -1,6 +1,6 @@
 // Generator : SpinalHDL v1.6.4    git head : 598c18959149eb18e5eee5b0aa3eef01ecaa41a1
 // Component : Facet
-// Git hash  : eea03646149c3cdc0d89e8c6c974a6b909029732
+// Git hash  : 66ef5378e7979e21acdf08583673032c100904f3
 
 `timescale 1ns/1ps 
 
@@ -89,6 +89,7 @@ module Facet (
   reg                 streamFork_4_io_outputs_0_ready;
   reg                 streamFork_4_io_outputs_1_ready;
   reg                 dbus_axi_decoder_io_input_r_ready;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_ready;
   wire       [15:0]   axi_ram_io_axi_arbiter_io_readInputs_0_ar_payload_addr;
   wire       [15:0]   axi_ram_io_axi_arbiter_io_sharedInputs_0_arw_payload_addr;
   wire       [15:0]   axi_ram_io_axi_arbiter_io_sharedInputs_1_arw_payload_addr;
@@ -682,6 +683,44 @@ module Facet (
   reg                 axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_rValid;
   wire                axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_validPipe_fire;
   wire                axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_validPipe_fire_1;
+  wire                axi_pcieAxiSharedBus_w_s2mPipe_valid;
+  reg                 axi_pcieAxiSharedBus_w_s2mPipe_ready;
+  wire       [31:0]   axi_pcieAxiSharedBus_w_s2mPipe_payload_data;
+  wire       [3:0]    axi_pcieAxiSharedBus_w_s2mPipe_payload_strb;
+  wire                axi_pcieAxiSharedBus_w_s2mPipe_payload_last;
+  reg                 axi_pcieAxiSharedBus_w_rValid;
+  reg        [31:0]   axi_pcieAxiSharedBus_w_rData_data;
+  reg        [3:0]    axi_pcieAxiSharedBus_w_rData_strb;
+  reg                 axi_pcieAxiSharedBus_w_rData_last;
+  wire                axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_valid;
+  wire                axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_ready;
+  wire       [31:0]   axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_data;
+  wire       [3:0]    axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_strb;
+  wire                axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_last;
+  reg                 axi_pcieAxiSharedBus_w_s2mPipe_rValid;
+  reg        [31:0]   axi_pcieAxiSharedBus_w_s2mPipe_rData_data;
+  reg        [3:0]    axi_pcieAxiSharedBus_w_s2mPipe_rData_strb;
+  reg                 axi_pcieAxiSharedBus_w_s2mPipe_rData_last;
+  wire                when_Stream_l342_3;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_valid;
+  reg                 axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready;
+  wire       [31:0]   axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_data;
+  wire       [1:0]    axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_resp;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_last;
+  reg                 axi_pcieAxiSharedBus_decoder_io_input_r_rValid;
+  reg        [31:0]   axi_pcieAxiSharedBus_decoder_io_input_r_rData_data;
+  reg        [1:0]    axi_pcieAxiSharedBus_decoder_io_input_r_rData_resp;
+  reg                 axi_pcieAxiSharedBus_decoder_io_input_r_rData_last;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_valid;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_ready;
+  wire       [31:0]   axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_data;
+  wire       [1:0]    axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_resp;
+  wire                axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_last;
+  reg                 axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rValid;
+  reg        [31:0]   axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_data;
+  reg        [1:0]    axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_resp;
+  reg                 axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_last;
+  wire                when_Stream_l342_4;
   wire       [1:0]    _zz_io_readInputs_0_ar_payload_id;
   wire       [1:0]    _zz_io_sharedInputs_0_arw_payload_id;
   wire       [1:0]    _zz_io_sharedInputs_1_arw_payload_id;
@@ -720,7 +759,7 @@ module Facet (
   reg        [31:0]   axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rData_data;
   reg        [3:0]    axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rData_strb;
   reg                 axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rData_last;
-  wire                when_Stream_l342_3;
+  wire                when_Stream_l342_5;
   wire       [0:0]    _zz_io_sharedInputs_0_arw_payload_id_1;
   wire       [0:0]    _zz_io_sharedInputs_1_arw_payload_id_1;
   wire       [7:0]    _zz_io_sharedInputs_1_arw_payload_len_1;
@@ -764,7 +803,7 @@ module Facet (
   reg        [31:0]   axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rData_data;
   reg        [3:0]    axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rData_strb;
   reg                 axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rData_last;
-  wire                when_Stream_l342_4;
+  wire                when_Stream_l342_6;
   wire       [2:0]    _zz_io_sharedInputs_0_arw_payload_id_2;
   wire       [2:0]    _zz_io_sharedInputs_1_arw_payload_id_2;
   wire       [7:0]    _zz_io_sharedInputs_1_arw_payload_len_2;
@@ -1156,16 +1195,16 @@ module Facet (
     .io_input_arw_payload_addr               (axi_pcieAxiSharedBus_arw_payload_addr[31:0]                             ), //i
     .io_input_arw_payload_prot               (axi_pcieAxiSharedBus_arw_payload_prot[2:0]                              ), //i
     .io_input_arw_payload_write              (axi_pcieAxiSharedBus_arw_payload_write                                  ), //i
-    .io_input_w_valid                        (axi_pcieAxiSharedBus_w_valid                                            ), //i
+    .io_input_w_valid                        (axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_valid                            ), //i
     .io_input_w_ready                        (axi_pcieAxiSharedBus_decoder_io_input_w_ready                           ), //o
-    .io_input_w_payload_data                 (axi_pcieAxiSharedBus_w_payload_data[31:0]                               ), //i
-    .io_input_w_payload_strb                 (axi_pcieAxiSharedBus_w_payload_strb[3:0]                                ), //i
-    .io_input_w_payload_last                 (axi_pcieAxiSharedBus_w_payload_last                                     ), //i
+    .io_input_w_payload_data                 (axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_data[31:0]               ), //i
+    .io_input_w_payload_strb                 (axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_strb[3:0]                ), //i
+    .io_input_w_payload_last                 (axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_last                     ), //i
     .io_input_b_valid                        (axi_pcieAxiSharedBus_decoder_io_input_b_valid                           ), //o
     .io_input_b_ready                        (axi_pcieAxiSharedBus_b_ready                                            ), //i
     .io_input_b_payload_resp                 (axi_pcieAxiSharedBus_decoder_io_input_b_payload_resp[1:0]               ), //o
     .io_input_r_valid                        (axi_pcieAxiSharedBus_decoder_io_input_r_valid                           ), //o
-    .io_input_r_ready                        (axi_pcieAxiSharedBus_r_ready                                            ), //i
+    .io_input_r_ready                        (axi_pcieAxiSharedBus_decoder_io_input_r_ready                           ), //i
     .io_input_r_payload_data                 (axi_pcieAxiSharedBus_decoder_io_input_r_payload_data[31:0]              ), //o
     .io_input_r_payload_resp                 (axi_pcieAxiSharedBus_decoder_io_input_r_payload_resp[1:0]               ), //o
     .io_input_r_payload_last                 (axi_pcieAxiSharedBus_decoder_io_input_r_payload_last                    ), //o
@@ -1775,13 +1814,48 @@ module Facet (
   assign axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_validPipe_payload_write = axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_payload_write;
   assign axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_validPipe_ready = axi_apbBridge_io_axi_arbiter_io_sharedInputs_1_arw_ready;
   assign axi_pcieAxiSharedBus_arw_ready = axi_pcieAxiSharedBus_decoder_io_input_arw_ready;
-  assign axi_pcieAxiSharedBus_w_ready = axi_pcieAxiSharedBus_decoder_io_input_w_ready;
+  assign axi_pcieAxiSharedBus_w_ready = (! axi_pcieAxiSharedBus_w_rValid);
+  assign axi_pcieAxiSharedBus_w_s2mPipe_valid = (axi_pcieAxiSharedBus_w_valid || axi_pcieAxiSharedBus_w_rValid);
+  assign axi_pcieAxiSharedBus_w_s2mPipe_payload_data = (axi_pcieAxiSharedBus_w_rValid ? axi_pcieAxiSharedBus_w_rData_data : axi_pcieAxiSharedBus_w_payload_data);
+  assign axi_pcieAxiSharedBus_w_s2mPipe_payload_strb = (axi_pcieAxiSharedBus_w_rValid ? axi_pcieAxiSharedBus_w_rData_strb : axi_pcieAxiSharedBus_w_payload_strb);
+  assign axi_pcieAxiSharedBus_w_s2mPipe_payload_last = (axi_pcieAxiSharedBus_w_rValid ? axi_pcieAxiSharedBus_w_rData_last : axi_pcieAxiSharedBus_w_payload_last);
+  always @(*) begin
+    axi_pcieAxiSharedBus_w_s2mPipe_ready = axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_ready;
+    if(when_Stream_l342_3) begin
+      axi_pcieAxiSharedBus_w_s2mPipe_ready = 1'b1;
+    end
+  end
+
+  assign when_Stream_l342_3 = (! axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_valid);
+  assign axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_valid = axi_pcieAxiSharedBus_w_s2mPipe_rValid;
+  assign axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_data = axi_pcieAxiSharedBus_w_s2mPipe_rData_data;
+  assign axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_strb = axi_pcieAxiSharedBus_w_s2mPipe_rData_strb;
+  assign axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_payload_last = axi_pcieAxiSharedBus_w_s2mPipe_rData_last;
+  assign axi_pcieAxiSharedBus_w_s2mPipe_m2sPipe_ready = axi_pcieAxiSharedBus_decoder_io_input_w_ready;
   assign axi_pcieAxiSharedBus_b_valid = axi_pcieAxiSharedBus_decoder_io_input_b_valid;
   assign axi_pcieAxiSharedBus_b_payload_resp = axi_pcieAxiSharedBus_decoder_io_input_b_payload_resp;
-  assign axi_pcieAxiSharedBus_r_valid = axi_pcieAxiSharedBus_decoder_io_input_r_valid;
-  assign axi_pcieAxiSharedBus_r_payload_data = axi_pcieAxiSharedBus_decoder_io_input_r_payload_data;
-  assign axi_pcieAxiSharedBus_r_payload_resp = axi_pcieAxiSharedBus_decoder_io_input_r_payload_resp;
-  assign axi_pcieAxiSharedBus_r_payload_last = axi_pcieAxiSharedBus_decoder_io_input_r_payload_last;
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_ready = (! axi_pcieAxiSharedBus_decoder_io_input_r_rValid);
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_valid = (axi_pcieAxiSharedBus_decoder_io_input_r_valid || axi_pcieAxiSharedBus_decoder_io_input_r_rValid);
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_data = (axi_pcieAxiSharedBus_decoder_io_input_r_rValid ? axi_pcieAxiSharedBus_decoder_io_input_r_rData_data : axi_pcieAxiSharedBus_decoder_io_input_r_payload_data);
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_resp = (axi_pcieAxiSharedBus_decoder_io_input_r_rValid ? axi_pcieAxiSharedBus_decoder_io_input_r_rData_resp : axi_pcieAxiSharedBus_decoder_io_input_r_payload_resp);
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_last = (axi_pcieAxiSharedBus_decoder_io_input_r_rValid ? axi_pcieAxiSharedBus_decoder_io_input_r_rData_last : axi_pcieAxiSharedBus_decoder_io_input_r_payload_last);
+  always @(*) begin
+    axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_ready;
+    if(when_Stream_l342_4) begin
+      axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready = 1'b1;
+    end
+  end
+
+  assign when_Stream_l342_4 = (! axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_valid);
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_valid = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rValid;
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_data = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_data;
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_resp = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_resp;
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_last = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_last;
+  assign axi_pcieAxiSharedBus_r_valid = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_valid;
+  assign axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_ready = axi_pcieAxiSharedBus_r_ready;
+  assign axi_pcieAxiSharedBus_r_payload_data = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_data;
+  assign axi_pcieAxiSharedBus_r_payload_resp = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_resp;
+  assign axi_pcieAxiSharedBus_r_payload_last = axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_m2sPipe_payload_last;
   assign axi_ram_io_axi_arbiter_io_readInputs_0_ar_payload_addr = axi4ReadOnlyDecoder_1_io_outputs_0_ar_validPipe_payload_addr[15:0];
   assign _zz_io_readInputs_0_ar_payload_id[1 : 0] = 2'b00;
   assign axi_ram_io_axi_arbiter_io_sharedInputs_0_arw_payload_addr = dbus_axi_decoder_io_sharedOutputs_0_arw_validPipe_payload_addr[15:0];
@@ -1806,12 +1880,12 @@ module Facet (
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_payload_last = (axi_ram_io_axi_arbiter_io_output_w_rValid ? axi_ram_io_axi_arbiter_io_output_w_rData_last : axi_ram_io_axi_arbiter_io_output_w_payload_last);
   always @(*) begin
     axi_ram_io_axi_arbiter_io_output_w_s2mPipe_ready = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_ready;
-    if(when_Stream_l342_3) begin
+    if(when_Stream_l342_5) begin
       axi_ram_io_axi_arbiter_io_output_w_s2mPipe_ready = 1'b1;
     end
   end
 
-  assign when_Stream_l342_3 = (! axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_valid);
+  assign when_Stream_l342_5 = (! axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_valid);
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_valid = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rValid;
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_payload_data = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rData_data;
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_payload_strb = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rData_strb;
@@ -1850,12 +1924,12 @@ module Facet (
   assign axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_payload_last = (axi_extAxiSharedBus_arbiter_io_output_w_rValid ? axi_extAxiSharedBus_arbiter_io_output_w_rData_last : axi_extAxiSharedBus_arbiter_io_output_w_payload_last);
   always @(*) begin
     axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_ready = axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_ready;
-    if(when_Stream_l342_4) begin
+    if(when_Stream_l342_6) begin
       axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_ready = 1'b1;
     end
   end
 
-  assign when_Stream_l342_4 = (! axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_valid);
+  assign when_Stream_l342_6 = (! axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_valid);
   assign axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_valid = axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rValid;
   assign axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_payload_data = axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rData_data;
   assign axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_m2sPipe_payload_strb = axi_extAxiSharedBus_arbiter_io_output_w_s2mPipe_rData_strb;
@@ -1982,6 +2056,10 @@ module Facet (
       axi_pcieAxiSharedBus_decoder_io_sharedOutputs_0_arw_rValid <= 1'b0;
       axi_pcieAxiSharedBus_decoder_io_sharedOutputs_1_arw_rValid <= 1'b0;
       axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_rValid <= 1'b0;
+      axi_pcieAxiSharedBus_w_rValid <= 1'b0;
+      axi_pcieAxiSharedBus_w_s2mPipe_rValid <= 1'b0;
+      axi_pcieAxiSharedBus_decoder_io_input_r_rValid <= 1'b0;
+      axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rValid <= 1'b0;
       axi_ram_io_axi_arbiter_io_output_arw_rValid <= 1'b0;
       axi_ram_io_axi_arbiter_io_output_w_rValid <= 1'b0;
       axi_ram_io_axi_arbiter_io_output_w_s2mPipe_rValid <= 1'b0;
@@ -2051,6 +2129,24 @@ module Facet (
       end
       if(axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_validPipe_fire) begin
         axi_pcieAxiSharedBus_decoder_io_sharedOutputs_2_arw_rValid <= 1'b0;
+      end
+      if(axi_pcieAxiSharedBus_w_valid) begin
+        axi_pcieAxiSharedBus_w_rValid <= 1'b1;
+      end
+      if(axi_pcieAxiSharedBus_w_s2mPipe_ready) begin
+        axi_pcieAxiSharedBus_w_rValid <= 1'b0;
+      end
+      if(axi_pcieAxiSharedBus_w_s2mPipe_ready) begin
+        axi_pcieAxiSharedBus_w_s2mPipe_rValid <= axi_pcieAxiSharedBus_w_s2mPipe_valid;
+      end
+      if(axi_pcieAxiSharedBus_decoder_io_input_r_valid) begin
+        axi_pcieAxiSharedBus_decoder_io_input_r_rValid <= 1'b1;
+      end
+      if(axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready) begin
+        axi_pcieAxiSharedBus_decoder_io_input_r_rValid <= 1'b0;
+      end
+      if(axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready) begin
+        axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rValid <= axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_valid;
       end
       if(axi_ram_io_axi_arbiter_io_output_arw_valid) begin
         axi_ram_io_axi_arbiter_io_output_arw_rValid <= 1'b1;
@@ -2129,6 +2225,26 @@ module Facet (
       dbus_axi_decoder_io_input_r_rData_data <= dbus_axi_decoder_io_input_r_payload_data;
       dbus_axi_decoder_io_input_r_rData_resp <= dbus_axi_decoder_io_input_r_payload_resp;
       dbus_axi_decoder_io_input_r_rData_last <= dbus_axi_decoder_io_input_r_payload_last;
+    end
+    if(axi_pcieAxiSharedBus_w_ready) begin
+      axi_pcieAxiSharedBus_w_rData_data <= axi_pcieAxiSharedBus_w_payload_data;
+      axi_pcieAxiSharedBus_w_rData_strb <= axi_pcieAxiSharedBus_w_payload_strb;
+      axi_pcieAxiSharedBus_w_rData_last <= axi_pcieAxiSharedBus_w_payload_last;
+    end
+    if(axi_pcieAxiSharedBus_w_s2mPipe_ready) begin
+      axi_pcieAxiSharedBus_w_s2mPipe_rData_data <= axi_pcieAxiSharedBus_w_s2mPipe_payload_data;
+      axi_pcieAxiSharedBus_w_s2mPipe_rData_strb <= axi_pcieAxiSharedBus_w_s2mPipe_payload_strb;
+      axi_pcieAxiSharedBus_w_s2mPipe_rData_last <= axi_pcieAxiSharedBus_w_s2mPipe_payload_last;
+    end
+    if(axi_pcieAxiSharedBus_decoder_io_input_r_ready) begin
+      axi_pcieAxiSharedBus_decoder_io_input_r_rData_data <= axi_pcieAxiSharedBus_decoder_io_input_r_payload_data;
+      axi_pcieAxiSharedBus_decoder_io_input_r_rData_resp <= axi_pcieAxiSharedBus_decoder_io_input_r_payload_resp;
+      axi_pcieAxiSharedBus_decoder_io_input_r_rData_last <= axi_pcieAxiSharedBus_decoder_io_input_r_payload_last;
+    end
+    if(axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_ready) begin
+      axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_data <= axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_data;
+      axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_resp <= axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_resp;
+      axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_rData_last <= axi_pcieAxiSharedBus_decoder_io_input_r_s2mPipe_payload_last;
     end
     if(axi_ram_io_axi_arbiter_io_output_arw_ready) begin
       axi_ram_io_axi_arbiter_io_output_arw_rData_addr <= axi_ram_io_axi_arbiter_io_output_arw_payload_addr;

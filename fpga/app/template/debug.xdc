@@ -1,5 +1,3 @@
-connect_debug_port u_ila_0/probe1 [get_nets [list core_inst/io_uart_rxd]]
-connect_debug_port u_ila_0/probe2 [get_nets [list core_inst/io_uart_txd]]
 
 
 
@@ -8,6 +6,8 @@ connect_debug_port u_ila_0/probe2 [get_nets [list core_inst/io_uart_txd]]
 
 
 
+
+set_false_path -from [get_pins pcie4c_uscale_plus_inst/inst/pcie4c_uscale_plus_0_gt_top_i/diablo_gt.diablo_gt_phy_wrapper/phy_clk_i/bufg_gt_userclk/O] -to [get_pins core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/facet_inst/axi_timerCtrl/io_external_buffercc/buffers_0_tick_reg/D]
 create_debug_core u_ila_0 ila
 set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
 set_property ALL_PROBE_SAME_MU_CNT 2 [get_debug_cores u_ila_0]
@@ -18,7 +18,7 @@ set_property C_INPUT_PIPE_STAGES 1 [get_debug_cores u_ila_0]
 set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
 set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
 set_property port_width 1 [get_debug_ports u_ila_0/clk]
-connect_debug_port u_ila_0/clk [get_nets [list pcie4c_uscale_plus_inst/inst/pcie4c_uscale_plus_0_gt_top_i/diablo_gt.diablo_gt_phy_wrapper/phy_clk_i/CLK_USERCLK]]
+connect_debug_port u_ila_0/clk [get_nets [list pcie_user_clk]]
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
 set_property port_width 24 [get_debug_ports u_ila_0/probe0]
 connect_debug_port u_ila_0/probe0 [get_nets [list {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[0]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[1]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[2]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[3]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[4]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[5]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[6]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[7]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[8]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[9]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[10]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[11]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[12]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[13]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[14]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[15]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[16]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[17]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[18]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[19]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[20]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[21]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[22]} {core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/s_axil_app_ctrl_awaddr[23]}]]

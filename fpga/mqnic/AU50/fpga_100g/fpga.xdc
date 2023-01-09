@@ -212,3 +212,8 @@ create_clock -period 10 -name pcie_mgt_refclk_1 [get_ports pcie_refclk_1_p]
 
 set_false_path -from [get_ports {pcie_reset_n}]
 set_input_delay 0 [get_ports {pcie_reset_n}]
+
+# UART
+set_false_path -to [get_ports {usb_uart0_txd}]
+set_output_delay 0 [get_ports {usb_uart0_txd}]
+set_false_path -from [get_ports {usb_uart0_rxd}]

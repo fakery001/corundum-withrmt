@@ -147,6 +147,7 @@ uint8_t spi_flash_read_byte(struct flash_device *fdev, int protocol)
         for (int i = 7; i >= 0; i--)
         {
             reg_write32(fdev->ctrl_reg, 0);
+            reg_read32(fdev->ctrl_reg); // dummy read
             val |= ((reg_read32(fdev->ctrl_reg) & FLASH_D_1) != 0) << i;
             reg_write32(fdev->ctrl_reg, FLASH_CLK);
             reg_read32(fdev->ctrl_reg); // dummy read
@@ -158,6 +159,7 @@ uint8_t spi_flash_read_byte(struct flash_device *fdev, int protocol)
         for (int i = 6; i >= 0; i -= 2)
         {
             reg_write32(fdev->ctrl_reg, 0);
+            reg_read32(fdev->ctrl_reg); // dummy read
             val |= (reg_read32(fdev->ctrl_reg) & FLASH_D_01) << i;
             reg_write32(fdev->ctrl_reg, FLASH_CLK);
             reg_read32(fdev->ctrl_reg); // dummy read
@@ -169,6 +171,7 @@ uint8_t spi_flash_read_byte(struct flash_device *fdev, int protocol)
         for (int i = 4; i >= 0; i -= 4)
         {
             reg_write32(fdev->ctrl_reg, 0);
+            reg_read32(fdev->ctrl_reg); // dummy read
             val |= (reg_read32(fdev->ctrl_reg) & FLASH_D_0123) << i;
             reg_write32(fdev->ctrl_reg, FLASH_CLK);
             reg_read32(fdev->ctrl_reg); // dummy read
@@ -341,6 +344,13 @@ int spi_flash_init(struct flash_device *fdev)
     printf("Memory type: 0x%02x\n", mem_type);
     printf("Memory capacity: 0x%02x\n", mem_capacity);
 
+    if (mfr_id == 0 || mfr_id == 0xff)
+    {
+        fprintf(stderr, "Failed to read flash ID\n");
+        spi_flash_deselect(fdev);
+        return -1;
+    }
+
     // convert from BCD
     mem_capacity = (mem_capacity & 0xf) + (((mem_capacity >> 4) & 0xf) * 10);
 
@@ -379,7 +389,7 @@ int spi_flash_read(struct flash_device *fdev, size_t addr, size_t len, void *des
         protocol = SPI_PROTO_QUAD_STR;
     }
 
-    if (addr > 0xffffff)
+    if (fdev->size > 0x1000000)
     {
         // four byte address read
         if (protocol == SPI_PROTO_QUAD_STR)
@@ -428,9 +438,9 @@ int spi_flash_read(struct flash_device *fdev, size_t addr, size_t len, void *des
     return 0;
 }
 
-int spi_flash_write(struct flash_device *fdev, size_t addr, size_t len, void *src)
+int spi_flash_write(struct flash_device *fdev, size_t addr, size_t len, const void *src)
 {
-    char *s = src;
+    const char *s = src;
 
     int protocol = SPI_PROTO_STR;
 
@@ -450,7 +460,7 @@ int spi_flash_write(struct flash_device *fdev, size_t addr, size_t len, void *sr
             return -1;
         }
 
-        if (addr > 0xffffff)
+        if (fdev->size > 0x1000000)
         {
             // four byte address page program
             if (protocol == SPI_PROTO_QUAD_STR)
@@ -536,7 +546,7 @@ int spi_flash_erase(struct flash_device *fdev, size_t addr, size_t len)
         }
 
         // block erase
-        if (addr > 0xffffff)
+        if (fdev->size > 0x1000000)
         {
             if (erase_block_size == SPI_SECTOR_SIZE)
             {

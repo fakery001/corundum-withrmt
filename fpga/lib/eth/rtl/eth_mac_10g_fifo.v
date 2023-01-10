@@ -42,13 +42,13 @@ module eth_mac_10g_fifo #
     parameter ENABLE_DIC = 1,
     parameter MIN_FRAME_LENGTH = 64,
     parameter TX_FIFO_DEPTH = 4096,
-    parameter TX_FIFO_PIPELINE_OUTPUT = 2,
+    parameter TX_FIFO_RAM_PIPELINE = 1,
     parameter TX_FRAME_FIFO = 1,
     parameter TX_DROP_OVERSIZE_FRAME = TX_FRAME_FIFO,
     parameter TX_DROP_BAD_FRAME = TX_DROP_OVERSIZE_FRAME,
     parameter TX_DROP_WHEN_FULL = 0,
     parameter RX_FIFO_DEPTH = 4096,
-    parameter RX_FIFO_PIPELINE_OUTPUT = 2,
+    parameter RX_FIFO_RAM_PIPELINE = 1,
     parameter RX_FRAME_FIFO = 1,
     parameter RX_DROP_OVERSIZE_FRAME = RX_FRAME_FIFO,
     parameter RX_DROP_BAD_FRAME = RX_DROP_OVERSIZE_FRAME,
@@ -221,11 +221,11 @@ end
 // PTP timestamping
 generate
 
-if (TX_PTP_TS_ENABLE) begin
+if (TX_PTP_TS_ENABLE) begin : tx_ptp
     
     ptp_clock_cdc #(
         .TS_WIDTH(PTP_TS_WIDTH),
-        .NS_WIDTH(4),
+        .NS_WIDTH(6),
         .FNS_WIDTH(16),
         .USE_SAMPLE_CLOCK(PTP_USE_SAMPLE_CLOCK)
     )
@@ -255,10 +255,9 @@ if (TX_PTP_TS_ENABLE) begin
         .FRAME_FIFO(0)
     )
     tx_ptp_ts_fifo (
-        .async_rst(logic_rst | tx_rst),
-
         // AXI input
         .s_clk(tx_clk),
+        .s_rst(tx_rst),
         .s_axis_tdata(tx_axis_ptp_ts_96),
         .s_axis_tkeep(0),
         .s_axis_tvalid(tx_axis_ptp_ts_valid),
@@ -270,6 +269,7 @@ if (TX_PTP_TS_ENABLE) begin
 
         // AXI output
         .m_clk(logic_clk),
+        .m_rst(logic_rst),
         .m_axis_tdata(m_axis_tx_ptp_ts_96),
         .m_axis_tkeep(),
         .m_axis_tvalid(m_axis_tx_ptp_ts_valid),
@@ -298,11 +298,11 @@ end else begin
 
 end
 
-if (RX_PTP_TS_ENABLE) begin
+if (RX_PTP_TS_ENABLE) begin : rx_ptp
 
     ptp_clock_cdc #(
         .TS_WIDTH(PTP_TS_WIDTH),
-        .NS_WIDTH(4),
+        .NS_WIDTH(6),
         .FNS_WIDTH(16),
         .USE_SAMPLE_CLOCK(PTP_USE_SAMPLE_CLOCK)
     )
@@ -395,7 +395,7 @@ axis_async_fifo_adapter #(
     .DEST_ENABLE(0),
     .USER_ENABLE(1),
     .USER_WIDTH(TX_USER_WIDTH),
-    .PIPELINE_OUTPUT(TX_FIFO_PIPELINE_OUTPUT),
+    .RAM_PIPELINE(TX_FIFO_RAM_PIPELINE),
     .FRAME_FIFO(TX_FRAME_FIFO),
     .USER_BAD_FRAME_VALUE(1'b1),
     .USER_BAD_FRAME_MASK(1'b1),
@@ -447,7 +447,7 @@ axis_async_fifo_adapter #(
     .DEST_ENABLE(0),
     .USER_ENABLE(1),
     .USER_WIDTH(RX_USER_WIDTH),
-    .PIPELINE_OUTPUT(RX_FIFO_PIPELINE_OUTPUT),
+    .RAM_PIPELINE(RX_FIFO_RAM_PIPELINE),
     .FRAME_FIFO(RX_FRAME_FIFO),
     .USER_BAD_FRAME_VALUE(1'b1),
     .USER_BAD_FRAME_MASK(1'b1),

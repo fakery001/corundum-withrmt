@@ -48,9 +48,45 @@ class TB(object):
         self.dev = S10PcieDevice(
             # configuration options
             pcie_generation=3,
-            # pcie_link_width=8,
-            # pld_clk_frequency=250e6,
+            pcie_link_width=16,
+            pld_clk_frequency=250e6,
             l_tile=False,
+            pf_count=1,
+            max_payload_size=1024,
+            enable_extended_tag=True,
+
+            pf0_msi_enable=False,
+            pf0_msi_count=1,
+            pf1_msi_enable=False,
+            pf1_msi_count=1,
+            pf2_msi_enable=False,
+            pf2_msi_count=1,
+            pf3_msi_enable=False,
+            pf3_msi_count=1,
+            pf0_msix_enable=True,
+            pf0_msix_table_size=31,
+            pf0_msix_table_bir=4,
+            pf0_msix_table_offset=0x00000000,
+            pf0_msix_pba_bir=4,
+            pf0_msix_pba_offset=0x00008000,
+            pf1_msix_enable=False,
+            pf1_msix_table_size=0,
+            pf1_msix_table_bir=0,
+            pf1_msix_table_offset=0x00000000,
+            pf1_msix_pba_bir=0,
+            pf1_msix_pba_offset=0x00000000,
+            pf2_msix_enable=False,
+            pf2_msix_table_size=0,
+            pf2_msix_table_bir=0,
+            pf2_msix_table_offset=0x00000000,
+            pf2_msix_pba_bir=0,
+            pf2_msix_pba_offset=0x00000000,
+            pf3_msix_enable=False,
+            pf3_msix_table_size=0,
+            pf3_msix_table_bir=0,
+            pf3_msix_table_offset=0x00000000,
+            pf3_msix_pba_bir=0,
+            pf3_msix_pba_offset=0x00000000,
 
             # signals
             # Clock and reset
@@ -108,11 +144,11 @@ class TB(object):
             # app_xfer_pending=dut.app_xfer_pending,
 
             # Interrupt interface
-            app_msi_req=dut.app_msi_req,
-            app_msi_ack=dut.app_msi_ack,
-            app_msi_tc=dut.app_msi_tc,
-            app_msi_num=dut.app_msi_num,
-            app_msi_func_num=dut.app_msi_func_num,
+            # app_msi_req=dut.app_msi_req,
+            # app_msi_ack=dut.app_msi_ack,
+            # app_msi_tc=dut.app_msi_tc,
+            # app_msi_num=dut.app_msi_num,
+            # app_msi_func_num=dut.app_msi_func_num,
             # app_int_sts=dut.app_int_sts,
 
             # Error interface
@@ -153,17 +189,21 @@ class TB(object):
 
         self.rc.make_port().connect(self.dev)
 
-        self.dev.functions[0].msi_multiple_message_capable = 5
-
         self.dev.functions[0].configure_bar(0, 2**len(dut.example_core_pcie_s10_inst.core_pcie_inst.axil_ctrl_awaddr))
         self.dev.functions[0].configure_bar(2, 2**len(dut.example_core_pcie_s10_inst.core_pcie_inst.axi_ram_awaddr))
+        self.dev.functions[0].configure_bar(4, 2**len(dut.example_core_pcie_s10_inst.core_pcie_inst.axil_msix_awaddr))
 
     async def init(self):
 
         await FallingEdge(self.dut.rst)
         await Timer(100, 'ns')
 
-        await self.rc.enumerate(enable_bus_mastering=True, configure_msi=True)
+        await self.rc.enumerate()
+
+        dev = self.rc.find_device(self.dev.functions[0].pcie_id)
+        await dev.enable_device()
+        await dev.set_master()
+        await dev.alloc_irq_vectors(32, 32)
 
 
 @cocotb.test()
@@ -176,8 +216,10 @@ async def run_test(dut):
     mem = tb.rc.mem_pool.alloc_region(16*1024*1024)
     mem_base = mem.get_absolute_address(0)
 
-    dev_pf0_bar0 = tb.rc.tree[0][0].bar_window[0]
-    dev_pf0_bar2 = tb.rc.tree[0][0].bar_window[2]
+    dev = tb.rc.find_device(tb.dev.functions[0].pcie_id)
+
+    dev_pf0_bar0 = dev.bar_window[0]
+    dev_pf0_bar2 = dev.bar_window[2]
 
     tb.log.info("Test memory write to BAR 2")
 
@@ -234,6 +276,132 @@ async def run_test(dut):
 
     assert mem[0:1024] == mem[0x1000:0x1000+1024]
 
+    tb.log.info("Test immediate write")
+
+    # write pcie write descriptor
+    await dev_pf0_bar0.write_dword(0x000200, (mem_base+0x1000) & 0xffffffff)
+    await dev_pf0_bar0.write_dword(0x000204, (mem_base+0x1000 >> 32) & 0xffffffff)
+    await dev_pf0_bar0.write_dword(0x000208, 0x44332211)
+    await dev_pf0_bar0.write_dword(0x000210, 0x4)
+    await dev_pf0_bar0.write_dword(0x000214, 0x800000AA)
+
+    await Timer(2000, 'ns')
+
+    # read status
+    val = await dev_pf0_bar0.read_dword(0x000218)
+    tb.log.info("Status: 0x%x", val)
+    assert val == 0x800000AA
+
+    tb.log.info("%s", mem.hexdump_str(0x1000, 64))
+
+    assert mem[0x1000:0x1000+4] == b'\x11\x22\x33\x44'
+
+    tb.log.info("Test DMA block operations")
+
+    region_len = 0x2000
+    src_offset = 0x0000
+    dest_offset = 0x4000
+
+    block_size = 256
+    block_stride = block_size
+    block_count = 32
+
+    # write packet data
+    mem[src_offset:src_offset+region_len] = bytearray([x % 256 for x in range(region_len)])
+
+    # enable DMA
+    await dev_pf0_bar0.write_dword(0x000000, 1)
+    # disable interrupts
+    await dev_pf0_bar0.write_dword(0x000008, 0)
+
+    # configure operation (read)
+    # DMA base address
+    await dev_pf0_bar0.write_dword(0x001080, (mem_base+src_offset) & 0xffffffff)
+    await dev_pf0_bar0.write_dword(0x001084, (mem_base+src_offset >> 32) & 0xffffffff)
+    # DMA offset address
+    await dev_pf0_bar0.write_dword(0x001088, 0)
+    await dev_pf0_bar0.write_dword(0x00108c, 0)
+    # DMA offset mask
+    await dev_pf0_bar0.write_dword(0x001090, region_len-1)
+    await dev_pf0_bar0.write_dword(0x001094, 0)
+    # DMA stride
+    await dev_pf0_bar0.write_dword(0x001098, block_stride)
+    await dev_pf0_bar0.write_dword(0x00109c, 0)
+    # RAM base address
+    await dev_pf0_bar0.write_dword(0x0010c0, 0)
+    await dev_pf0_bar0.write_dword(0x0010c4, 0)
+    # RAM offset address
+    await dev_pf0_bar0.write_dword(0x0010c8, 0)
+    await dev_pf0_bar0.write_dword(0x0010cc, 0)
+    # RAM offset mask
+    await dev_pf0_bar0.write_dword(0x0010d0, region_len-1)
+    await dev_pf0_bar0.write_dword(0x0010d4, 0)
+    # RAM stride
+    await dev_pf0_bar0.write_dword(0x0010d8, block_stride)
+    await dev_pf0_bar0.write_dword(0x0010dc, 0)
+    # clear cycle count
+    await dev_pf0_bar0.write_dword(0x001008, 0)
+    await dev_pf0_bar0.write_dword(0x00100c, 0)
+    # block length
+    await dev_pf0_bar0.write_dword(0x001010, block_size)
+    # block count
+    await dev_pf0_bar0.write_dword(0x001018, block_count)
+    await dev_pf0_bar0.write_dword(0x00101c, 0)
+    # start
+    await dev_pf0_bar0.write_dword(0x001000, 1)
+
+    for k in range(10):
+        cnt = await dev_pf0_bar0.read_dword(0x001018)
+        await Timer(1000, 'ns')
+        if cnt == 0:
+            break
+
+    # configure operation (write)
+    # DMA base address
+    await dev_pf0_bar0.write_dword(0x001180, (mem_base+dest_offset) & 0xffffffff)
+    await dev_pf0_bar0.write_dword(0x001184, (mem_base+dest_offset >> 32) & 0xffffffff)
+    # DMA offset address
+    await dev_pf0_bar0.write_dword(0x001188, 0)
+    await dev_pf0_bar0.write_dword(0x00118c, 0)
+    # DMA offset mask
+    await dev_pf0_bar0.write_dword(0x001190, region_len-1)
+    await dev_pf0_bar0.write_dword(0x001194, 0)
+    # DMA stride
+    await dev_pf0_bar0.write_dword(0x001198, block_stride)
+    await dev_pf0_bar0.write_dword(0x00119c, 0)
+    # RAM base address
+    await dev_pf0_bar0.write_dword(0x0011c0, 0)
+    await dev_pf0_bar0.write_dword(0x0011c4, 0)
+    # RAM offset address
+    await dev_pf0_bar0.write_dword(0x0011c8, 0)
+    await dev_pf0_bar0.write_dword(0x0011cc, 0)
+    # RAM offset mask
+    await dev_pf0_bar0.write_dword(0x0011d0, region_len-1)
+    await dev_pf0_bar0.write_dword(0x0011d4, 0)
+    # RAM stride
+    await dev_pf0_bar0.write_dword(0x0011d8, block_stride)
+    await dev_pf0_bar0.write_dword(0x0011dc, 0)
+    # clear cycle count
+    await dev_pf0_bar0.write_dword(0x001108, 0)
+    await dev_pf0_bar0.write_dword(0x00110c, 0)
+    # block length
+    await dev_pf0_bar0.write_dword(0x001110, block_size)
+    # block count
+    await dev_pf0_bar0.write_dword(0x001118, block_count)
+    await dev_pf0_bar0.write_dword(0x00111c, 0)
+    # start
+    await dev_pf0_bar0.write_dword(0x001100, 1)
+
+    for k in range(10):
+        cnt = await dev_pf0_bar0.read_dword(0x001118)
+        await Timer(1000, 'ns')
+        if cnt == 0:
+            break
+
+    tb.log.info("%s", mem.hexdump_str(dest_offset, region_len))
+
+    assert mem[src_offset:src_offset+region_len] == mem[dest_offset:dest_offset+region_len]
+
     await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)
 
@@ -261,7 +429,6 @@ def test_fpga_core(request):
         os.path.join(pcie_rtl_dir, "pcie_s10_if_rx.v"),
         os.path.join(pcie_rtl_dir, "pcie_s10_if_tx.v"),
         os.path.join(pcie_rtl_dir, "pcie_s10_cfg.v"),
-        os.path.join(pcie_rtl_dir, "pcie_s10_msi.v"),
         os.path.join(pcie_rtl_dir, "pcie_axil_master.v"),
         os.path.join(pcie_rtl_dir, "pcie_axi_master.v"),
         os.path.join(pcie_rtl_dir, "pcie_axi_master_rd.v"),
@@ -269,24 +436,29 @@ def test_fpga_core(request):
         os.path.join(pcie_rtl_dir, "pcie_tlp_demux_bar.v"),
         os.path.join(pcie_rtl_dir, "pcie_tlp_demux.v"),
         os.path.join(pcie_rtl_dir, "pcie_tlp_mux.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fc_count.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fifo.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fifo_raw.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fifo_mux.v"),
+        os.path.join(pcie_rtl_dir, "pcie_msix.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie_rd.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie_wr.v"),
         os.path.join(pcie_rtl_dir, "dma_psdpram.v"),
-        os.path.join(pcie_rtl_dir, "arbiter.v"),
         os.path.join(pcie_rtl_dir, "priority_encoder.v"),
         os.path.join(pcie_rtl_dir, "pulse_merge.v"),
     ]
 
     parameters = {}
 
-    parameters['SEG_COUNT'] = 1
+    parameters['SEG_COUNT'] = 2
     parameters['SEG_DATA_WIDTH'] = 256
     parameters['SEG_EMPTY_WIDTH'] = (parameters['SEG_DATA_WIDTH'] // 32 - 1).bit_length()
     parameters['TX_SEQ_NUM_WIDTH'] = 6
     parameters['PCIE_TAG_COUNT'] = 64
     parameters['BAR0_APERTURE'] = 24
     parameters['BAR2_APERTURE'] = 24
+    parameters['BAR4_APERTURE'] = 16
 
     extra_env = {f'PARAM_{k}': str(v) for k, v in parameters.items()}
 

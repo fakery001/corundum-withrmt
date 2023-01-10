@@ -52,7 +52,7 @@ int mqnic_irq_init_pcie(struct mqnic_dev *mdev)
 	int k;
 
 	// Allocate MSI IRQs
-	mdev->irq_count = pci_alloc_irq_vectors(pdev, 1, MQNIC_MAX_IRQ, PCI_IRQ_MSI);
+	mdev->irq_count = pci_alloc_irq_vectors(pdev, 1, MQNIC_MAX_IRQ, PCI_IRQ_MSI | PCI_IRQ_MSIX);
 	if (mdev->irq_count < 0) {
 		dev_err(dev, "Failed to allocate IRQs");
 		return -ENOMEM;
@@ -84,6 +84,8 @@ int mqnic_irq_init_pcie(struct mqnic_dev *mdev)
 		mdev->irq[k] = irq;
 	}
 
+	dev_info(dev, "Configured %d IRQs", mdev->irq_count);
+
 	return 0;
 fail:
 	mqnic_irq_deinit_pcie(mdev);
@@ -104,4 +106,46 @@ void mqnic_irq_deinit_pcie(struct mqnic_dev *mdev)
 	}
 
 	pci_free_irq_vectors(pdev);
+}
+
+int mqnic_irq_init_platform(struct mqnic_dev *mdev)
+{
+	struct platform_device *pdev = mdev->pfdev;
+	struct device *dev = mdev->dev;
+	int k;
+
+	// Allocate IRQs
+	mdev->irq_count = platform_irq_count(pdev);
+
+	// Set up interrupts
+	for (k = 0; k < mdev->irq_count; k++) {
+		int irqn;
+		struct mqnic_irq *irq;
+		int ret;
+
+		irqn = platform_get_irq(pdev, k);
+		if (irqn < 0)
+			return irqn;
+
+		irq = devm_kzalloc(dev, sizeof(*irq), GFP_KERNEL);
+		if (!irq)
+			return -ENOMEM;
+
+		ATOMIC_INIT_NOTIFIER_HEAD(&irq->nh);
+
+		snprintf(irq->name, sizeof(irq->name), "%s-%u", mdev->name, k);
+		ret = devm_request_irq(dev, irqn, mqnic_irq_handler, 0, irq->name, irq);
+		if (ret < 0) {
+			dev_err(dev, "Failed to request IRQ %d (interrupt number %d)", k, irqn);
+			return ret;
+		}
+
+		irq->index = k;
+		irq->irqn = irqn;
+		mdev->irq[k] = irq;
+	}
+
+	dev_info(dev, "Configured %d IRQs", mdev->irq_count);
+
+	return 0;
 }

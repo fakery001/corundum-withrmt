@@ -7,8 +7,6 @@ FPGA_ARCH = virtexuplus
 # Files for synthesis
 SYN_FILES = rtl/fpga.v
 SYN_FILES += rtl/fpga_core.v
-SYN_FILES += rtl/eth_xcvr_phy_wrapper.v
-SYN_FILES += rtl/eth_xcvr_phy_quad_wrapper.v
 SYN_FILES += rtl/debounce_switch.v
 SYN_FILES += rtl/sync_signal.v
 SYN_FILES += rtl/common/mqnic_core_pcie_us.v
@@ -17,11 +15,19 @@ SYN_FILES += rtl/common/mqnic_core.v
 SYN_FILES += rtl/common/mqnic_interface.v
 SYN_FILES += rtl/common/mqnic_interface_tx.v
 SYN_FILES += rtl/common/mqnic_interface_rx.v
+SYN_FILES += rtl/common/mqnic_port.v
+SYN_FILES += rtl/common/mqnic_port_tx.v
+SYN_FILES += rtl/common/mqnic_port_rx.v
 SYN_FILES += rtl/common/mqnic_egress.v
 SYN_FILES += rtl/common/mqnic_ingress.v
+SYN_FILES += rtl/common/mqnic_l2_egress.v
+SYN_FILES += rtl/common/mqnic_l2_ingress.v
+SYN_FILES += rtl/common/mqnic_rx_queue_map.v
 SYN_FILES += rtl/common/mqnic_ptp.v
 SYN_FILES += rtl/common/mqnic_ptp_clock.v
 SYN_FILES += rtl/common/mqnic_ptp_perout.v
+SYN_FILES += rtl/common/mqnic_rb_clk_info.v
+SYN_FILES += rtl/common/mqnic_port_map_phy_xgmii.v
 SYN_FILES += rtl/common/cpl_write.v
 SYN_FILES += rtl/common/cpl_op_mux.v
 SYN_FILES += rtl/common/desc_fetch.v
@@ -37,6 +43,9 @@ SYN_FILES += rtl/common/rx_engine.v
 SYN_FILES += rtl/common/tx_checksum.v
 SYN_FILES += rtl/common/rx_hash.v
 SYN_FILES += rtl/common/rx_checksum.v
+SYN_FILES += rtl/common/rb_drp.v
+SYN_FILES += rtl/common/eth_xcvr_phy_10g_gty_wrapper.v
+SYN_FILES += rtl/common/eth_xcvr_phy_10g_gty_quad_wrapper.v
 SYN_FILES += rtl/common/stats_counter.v
 SYN_FILES += rtl/common/stats_collect.v
 SYN_FILES += rtl/common/stats_pcie_if.v
@@ -66,7 +75,6 @@ SYN_FILES += lib/eth/rtl/lfsr.v
 SYN_FILES += lib/eth/rtl/ptp_clock.v
 SYN_FILES += lib/eth/rtl/ptp_clock_cdc.v
 SYN_FILES += lib/eth/rtl/ptp_perout.v
-SYN_FILES += lib/eth/rtl/ptp_ts_extract.v
 SYN_FILES += lib/axi/rtl/axil_interconnect.v
 SYN_FILES += lib/axi/rtl/axil_crossbar.v
 SYN_FILES += lib/axi/rtl/axil_crossbar_addr.v
@@ -93,6 +101,10 @@ SYN_FILES += lib/pcie/rtl/pcie_axil_master.v
 SYN_FILES += lib/pcie/rtl/pcie_tlp_demux.v
 SYN_FILES += lib/pcie/rtl/pcie_tlp_demux_bar.v
 SYN_FILES += lib/pcie/rtl/pcie_tlp_mux.v
+SYN_FILES += lib/pcie/rtl/pcie_tlp_fifo.v
+SYN_FILES += lib/pcie/rtl/pcie_tlp_fifo_raw.v
+SYN_FILES += lib/pcie/rtl/pcie_msix.v
+SYN_FILES += lib/pcie/rtl/irq_rate_limit.v
 SYN_FILES += lib/pcie/rtl/dma_if_pcie.v
 SYN_FILES += lib/pcie/rtl/dma_if_pcie_rd.v
 SYN_FILES += lib/pcie/rtl/dma_if_pcie_wr.v
@@ -111,7 +123,6 @@ SYN_FILES += lib/pcie/rtl/pcie_us_if_rq.v
 SYN_FILES += lib/pcie/rtl/pcie_us_if_cc.v
 SYN_FILES += lib/pcie/rtl/pcie_us_if_cq.v
 SYN_FILES += lib/pcie/rtl/pcie_us_cfg.v
-SYN_FILES += lib/pcie/rtl/pcie_us_msi.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
 
 # XDC files
@@ -121,11 +132,17 @@ XDC_FILES += boot.xdc
 XDC_FILES += lib/axis/syn/vivado/axis_async_fifo.tcl
 XDC_FILES += lib/axis/syn/vivado/sync_reset.tcl
 XDC_FILES += lib/eth/syn/vivado/ptp_clock_cdc.tcl
+XDC_FILES += ../../../common/syn/vivado/mqnic_port.tcl
+XDC_FILES += ../../../common/syn/vivado/mqnic_ptp_clock.tcl
+XDC_FILES += ../../../common/syn/vivado/mqnic_rb_clk_info.tcl
+XDC_FILES += ../../../common/syn/vivado/rb_drp.tcl
+XDC_FILES += ../../../common/syn/vivado/eth_xcvr_phy_10g_gty_wrapper.tcl
 XDC_FILES += ../../../common/syn/vivado/tdma_ber_ch.tcl
 
 # IP
 IP_TCL_FILES = ip/pcie4_uscale_plus_0.tcl
-IP_TCL_FILES += ip/eth_xcvr_gt.tcl
+IP_TCL_FILES += ip/eth_xcvr_gty.tcl
+#IP_TCL_FILES += ip/ddr4_0.tcl
 
 # Configuration
 CONFIG_TCL_FILES = ./config.tcl
@@ -149,6 +166,7 @@ include ../common/vivado.mk
 	EXT=bit; COUNT=100; \
 	while [ -e rev/$*_rev$$COUNT.$$EXT ]; \
 	do COUNT=$$((COUNT+1)); done; \
+	COUNT=$$((COUNT-1)); \
 	cp $@ rev/$*_fallback_rev$$COUNT.$$EXT; \
 	echo "Output: rev/$*_fallback_rev$$COUNT.$$EXT";
 

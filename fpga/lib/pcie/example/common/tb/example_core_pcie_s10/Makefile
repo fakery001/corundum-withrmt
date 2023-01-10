@@ -37,7 +37,6 @@ VERILOG_SOURCES += ../../../../rtl/pcie_s10_if.v
 VERILOG_SOURCES += ../../../../rtl/pcie_s10_if_rx.v
 VERILOG_SOURCES += ../../../../rtl/pcie_s10_if_tx.v
 VERILOG_SOURCES += ../../../../rtl/pcie_s10_cfg.v
-VERILOG_SOURCES += ../../../../rtl/pcie_s10_msi.v
 VERILOG_SOURCES += ../../../../rtl/pcie_axil_master.v
 VERILOG_SOURCES += ../../../../rtl/pcie_axi_master.v
 VERILOG_SOURCES += ../../../../rtl/pcie_axi_master_rd.v
@@ -45,11 +44,15 @@ VERILOG_SOURCES += ../../../../rtl/pcie_axi_master_wr.v
 VERILOG_SOURCES += ../../../../rtl/pcie_tlp_demux_bar.v
 VERILOG_SOURCES += ../../../../rtl/pcie_tlp_demux.v
 VERILOG_SOURCES += ../../../../rtl/pcie_tlp_mux.v
+VERILOG_SOURCES += ../../../../rtl/pcie_tlp_fc_count.v
+VERILOG_SOURCES += ../../../../rtl/pcie_tlp_fifo.v
+VERILOG_SOURCES += ../../../../rtl/pcie_tlp_fifo_raw.v
+VERILOG_SOURCES += ../../../../rtl/pcie_tlp_fifo_mux.v
+VERILOG_SOURCES += ../../../../rtl/pcie_msix.v
 VERILOG_SOURCES += ../../../../rtl/dma_if_pcie.v
 VERILOG_SOURCES += ../../../../rtl/dma_if_pcie_rd.v
 VERILOG_SOURCES += ../../../../rtl/dma_if_pcie_wr.v
 VERILOG_SOURCES += ../../../../rtl/dma_psdpram.v
-VERILOG_SOURCES += ../../../../rtl/arbiter.v
 VERILOG_SOURCES += ../../../../rtl/priority_encoder.v
 VERILOG_SOURCES += ../../../../rtl/pulse_merge.v
 
@@ -61,14 +64,15 @@ export PARAM_TX_SEQ_NUM_WIDTH ?= 6
 export PARAM_TX_SEQ_NUM_ENABLE ?= 1
 export PARAM_L_TILE ?= 0
 export PARAM_PCIE_TAG_COUNT ?= 256
+export PARAM_IMM_ENABLE ?= 1
+export PARAM_IMM_WIDTH ?= 32
 export PARAM_READ_OP_TABLE_SIZE ?= $(PARAM_PCIE_TAG_COUNT)
 export PARAM_READ_TX_LIMIT ?= $(shell echo "$$(( 1 << $(PARAM_TX_SEQ_NUM_WIDTH) ))" )
-export PARAM_READ_TX_FC_ENABLE ?= 1
 export PARAM_WRITE_OP_TABLE_SIZE ?= $(shell echo "$$(( 1 << $(PARAM_TX_SEQ_NUM_WIDTH) ))" )
 export PARAM_WRITE_TX_LIMIT ?= $(shell echo "$$(( 1 << $(PARAM_TX_SEQ_NUM_WIDTH) ))" )
-export PARAM_WRITE_TX_FC_ENABLE ?= 1
 export PARAM_BAR0_APERTURE ?= 24
 export PARAM_BAR2_APERTURE ?= 24
+export PARAM_BAR4_APERTURE ?= 16
 
 ifeq ($(SIM), icarus)
 	PLUSARGS += -fst
@@ -80,14 +84,15 @@ ifeq ($(SIM), icarus)
 	COMPILE_ARGS += -P $(TOPLEVEL).TX_SEQ_NUM_ENABLE=$(PARAM_TX_SEQ_NUM_ENABLE)
 	COMPILE_ARGS += -P $(TOPLEVEL).L_TILE=$(PARAM_L_TILE)
 	COMPILE_ARGS += -P $(TOPLEVEL).PCIE_TAG_COUNT=$(PARAM_PCIE_TAG_COUNT)
+	COMPILE_ARGS += -P $(TOPLEVEL).IMM_ENABLE=$(PARAM_IMM_ENABLE)
+	COMPILE_ARGS += -P $(TOPLEVEL).IMM_WIDTH=$(PARAM_IMM_WIDTH)
 	COMPILE_ARGS += -P $(TOPLEVEL).READ_OP_TABLE_SIZE=$(PARAM_READ_OP_TABLE_SIZE)
 	COMPILE_ARGS += -P $(TOPLEVEL).READ_TX_LIMIT=$(PARAM_READ_TX_LIMIT)
-	COMPILE_ARGS += -P $(TOPLEVEL).READ_TX_FC_ENABLE=$(PARAM_READ_TX_FC_ENABLE)
 	COMPILE_ARGS += -P $(TOPLEVEL).WRITE_OP_TABLE_SIZE=$(PARAM_WRITE_OP_TABLE_SIZE)
 	COMPILE_ARGS += -P $(TOPLEVEL).WRITE_TX_LIMIT=$(PARAM_WRITE_TX_LIMIT)
-	COMPILE_ARGS += -P $(TOPLEVEL).WRITE_TX_FC_ENABLE=$(PARAM_WRITE_TX_FC_ENABLE)
 	COMPILE_ARGS += -P $(TOPLEVEL).BAR0_APERTURE=$(PARAM_BAR0_APERTURE)
 	COMPILE_ARGS += -P $(TOPLEVEL).BAR2_APERTURE=$(PARAM_BAR2_APERTURE)
+	COMPILE_ARGS += -P $(TOPLEVEL).BAR4_APERTURE=$(PARAM_BAR4_APERTURE)
 
 	ifeq ($(WAVES), 1)
 		VERILOG_SOURCES += iverilog_dump.v
@@ -103,14 +108,15 @@ else ifeq ($(SIM), verilator)
 	COMPILE_ARGS += -GTX_SEQ_NUM_ENABLE=$(PARAM_TX_SEQ_NUM_ENABLE)
 	COMPILE_ARGS += -GL_TILE=$(PARAM_L_TILE)
 	COMPILE_ARGS += -GPCIE_TAG_COUNT=$(PARAM_PCIE_TAG_COUNT)
+	COMPILE_ARGS += -GIMM_ENABLE=$(PARAM_IMM_ENABLE)
+	COMPILE_ARGS += -GIMM_WIDTH=$(PARAM_IMM_WIDTH)
 	COMPILE_ARGS += -GREAD_OP_TABLE_SIZE=$(PARAM_READ_OP_TABLE_SIZE)
 	COMPILE_ARGS += -GREAD_TX_LIMIT=$(PARAM_READ_TX_LIMIT)
-	COMPILE_ARGS += -GREAD_TX_FC_ENABLE=$(PARAM_READ_TX_FC_ENABLE)
 	COMPILE_ARGS += -GWRITE_OP_TABLE_SIZE=$(PARAM_WRITE_OP_TABLE_SIZE)
 	COMPILE_ARGS += -GWRITE_TX_LIMIT=$(PARAM_WRITE_TX_LIMIT)
-	COMPILE_ARGS += -GWRITE_TX_FC_ENABLE=$(PARAM_WRITE_TX_FC_ENABLE)
 	COMPILE_ARGS += -GBAR0_APERTURE=$(PARAM_BAR0_APERTURE)
 	COMPILE_ARGS += -GBAR2_APERTURE=$(PARAM_BAR2_APERTURE)
+	COMPILE_ARGS += -GBAR4_APERTURE=$(PARAM_BAR4_APERTURE)
 
 	ifeq ($(WAVES), 1)
 		COMPILE_ARGS += --trace-fst

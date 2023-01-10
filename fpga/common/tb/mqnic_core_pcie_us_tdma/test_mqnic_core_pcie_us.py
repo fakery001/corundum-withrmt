@@ -64,7 +64,7 @@ except ImportError:
 
 
 class TB(object):
-    def __init__(self, dut):
+    def __init__(self, dut, msix_count=32):
         self.dut = dut
 
         self.log = SimLog("cocotb.tb")
@@ -82,10 +82,13 @@ class TB(object):
             # pcie_link_width=16,
             user_clk_frequency=250e6,
             alignment="dword",
-            cq_cc_straddle=False,
-            rq_rc_straddle=False,
-            rc_4tlp_straddle=False,
-            enable_pf1=False,
+            cq_straddle=len(dut.pcie_if_inst.pcie_us_if_cq_inst.rx_req_tlp_valid_reg) > 1,
+            cc_straddle=len(dut.pcie_if_inst.pcie_us_if_cc_inst.out_tlp_valid) > 1,
+            rq_straddle=len(dut.pcie_if_inst.pcie_us_if_rq_inst.out_tlp_valid) > 1,
+            rc_straddle=len(dut.pcie_if_inst.pcie_us_if_rc_inst.rx_cpl_tlp_valid_reg) > 1,
+            rc_4tlp_straddle=len(dut.pcie_if_inst.pcie_us_if_rc_inst.rx_cpl_tlp_valid_reg) > 2,
+            pf_count=1,
+            max_payload_size=1024,
             enable_client_tag=True,
             enable_extended_tag=True,
             enable_parity=False,
@@ -93,8 +96,38 @@ class TB(object):
             enable_sriov=False,
             enable_extended_configuration=False,
 
-            enable_pf0_msi=True,
-            enable_pf1_msi=False,
+            pf0_msi_enable=False,
+            pf0_msi_count=32,
+            pf1_msi_enable=False,
+            pf1_msi_count=1,
+            pf2_msi_enable=False,
+            pf2_msi_count=1,
+            pf3_msi_enable=False,
+            pf3_msi_count=1,
+            pf0_msix_enable=True,
+            pf0_msix_table_size=msix_count-1,
+            pf0_msix_table_bir=0,
+            pf0_msix_table_offset=0x00010000,
+            pf0_msix_pba_bir=0,
+            pf0_msix_pba_offset=0x00018000,
+            pf1_msix_enable=False,
+            pf1_msix_table_size=0,
+            pf1_msix_table_bir=0,
+            pf1_msix_table_offset=0x00000000,
+            pf1_msix_pba_bir=0,
+            pf1_msix_pba_offset=0x00000000,
+            pf2_msix_enable=False,
+            pf2_msix_table_size=0,
+            pf2_msix_table_bir=0,
+            pf2_msix_table_offset=0x00000000,
+            pf2_msix_pba_bir=0,
+            pf2_msix_pba_offset=0x00000000,
+            pf3_msix_enable=False,
+            pf3_msix_table_size=0,
+            pf3_msix_table_bir=0,
+            pf3_msix_table_offset=0x00000000,
+            pf3_msix_pba_bir=0,
+            pf3_msix_pba_offset=0x00000000,
 
             # signals
             # Clock and Reset Interface
@@ -220,31 +253,33 @@ class TB(object):
             # cfg_interrupt_int
             # cfg_interrupt_sent
             # cfg_interrupt_pending
-            cfg_interrupt_msi_enable=dut.cfg_interrupt_msi_enable,
-            cfg_interrupt_msi_mmenable=dut.cfg_interrupt_msi_mmenable,
-            cfg_interrupt_msi_mask_update=dut.cfg_interrupt_msi_mask_update,
-            cfg_interrupt_msi_data=dut.cfg_interrupt_msi_data,
-            # cfg_interrupt_msi_select=dut.cfg_interrupt_msi_select,
-            cfg_interrupt_msi_int=dut.cfg_interrupt_msi_int,
-            cfg_interrupt_msi_pending_status=dut.cfg_interrupt_msi_pending_status,
-            cfg_interrupt_msi_pending_status_data_enable=dut.cfg_interrupt_msi_pending_status_data_enable,
-            # cfg_interrupt_msi_pending_status_function_num=dut.cfg_interrupt_msi_pending_status_function_num,
-            cfg_interrupt_msi_sent=dut.cfg_interrupt_msi_sent,
-            cfg_interrupt_msi_fail=dut.cfg_interrupt_msi_fail,
-            # cfg_interrupt_msix_enable
-            # cfg_interrupt_msix_mask
-            # cfg_interrupt_msix_vf_enable
-            # cfg_interrupt_msix_vf_mask
-            # cfg_interrupt_msix_address
-            # cfg_interrupt_msix_data
-            # cfg_interrupt_msix_int
-            # cfg_interrupt_msix_vec_pending
-            # cfg_interrupt_msix_vec_pending_status
-            cfg_interrupt_msi_attr=dut.cfg_interrupt_msi_attr,
-            cfg_interrupt_msi_tph_present=dut.cfg_interrupt_msi_tph_present,
-            cfg_interrupt_msi_tph_type=dut.cfg_interrupt_msi_tph_type,
-            # cfg_interrupt_msi_tph_st_tag=dut.cfg_interrupt_msi_tph_st_tag,
-            # cfg_interrupt_msi_function_number=dut.cfg_interrupt_msi_function_number,
+            # cfg_interrupt_msi_enable
+            # cfg_interrupt_msi_mmenable
+            # cfg_interrupt_msi_mask_update
+            # cfg_interrupt_msi_data
+            # cfg_interrupt_msi_select
+            # cfg_interrupt_msi_int
+            # cfg_interrupt_msi_pending_status
+            # cfg_interrupt_msi_pending_status_data_enable
+            # cfg_interrupt_msi_pending_status_function_num
+            # cfg_interrupt_msi_sent
+            # cfg_interrupt_msi_fail
+            cfg_interrupt_msix_enable=dut.cfg_interrupt_msix_enable,
+            cfg_interrupt_msix_mask=dut.cfg_interrupt_msix_mask,
+            cfg_interrupt_msix_vf_enable=dut.cfg_interrupt_msix_vf_enable,
+            cfg_interrupt_msix_vf_mask=dut.cfg_interrupt_msix_vf_mask,
+            cfg_interrupt_msix_address=dut.cfg_interrupt_msix_address,
+            cfg_interrupt_msix_data=dut.cfg_interrupt_msix_data,
+            cfg_interrupt_msix_int=dut.cfg_interrupt_msix_int,
+            cfg_interrupt_msix_vec_pending=dut.cfg_interrupt_msix_vec_pending,
+            cfg_interrupt_msix_vec_pending_status=dut.cfg_interrupt_msix_vec_pending_status,
+            cfg_interrupt_msix_sent=dut.cfg_interrupt_msix_sent,
+            cfg_interrupt_msix_fail=dut.cfg_interrupt_msix_fail,
+            # cfg_interrupt_msi_attr
+            # cfg_interrupt_msi_tph_present
+            # cfg_interrupt_msi_tph_type
+            # cfg_interrupt_msi_tph_st_tag
+            cfg_interrupt_msi_function_number=dut.cfg_interrupt_msi_function_number,
 
             # Configuration Extend Interface
             # cfg_ext_read_received
@@ -263,8 +298,6 @@ class TB(object):
 
         self.driver = mqnic.Driver()
 
-        self.dev.functions[0].msi_cap.msi_multiple_message_capable = 5
-
         self.dev.functions[0].configure_bar(0, 2**len(dut.core_pcie_inst.axil_ctrl_araddr), ext=True, prefetch=True)
         if hasattr(dut.core_pcie_inst, 'pcie_app_ctrl'):
             self.dev.functions[0].configure_bar(2, 2**len(dut.core_pcie_inst.axil_app_ctrl_araddr), ext=True, prefetch=True)
@@ -272,7 +305,7 @@ class TB(object):
         # Ethernet
         self.port_mac = []
 
-        eth_int_if_width = len(dut.core_pcie_inst.core_inst.iface[0].port[0].rx_async_fifo_inst.m_axis_tdata)
+        eth_int_if_width = len(dut.core_pcie_inst.core_inst.m_axis_tx_tdata) / len(dut.core_pcie_inst.core_inst.m_axis_tx_tvalid)
         eth_clock_period = 6.4
         eth_speed = 10e9
 
@@ -290,29 +323,32 @@ class TB(object):
             eth_speed = 100e9
 
         for iface in dut.core_pcie_inst.core_inst.iface:
-            for port in iface.port:
-                cocotb.start_soon(Clock(port.port_rx_clk, eth_clock_period, units="ns").start())
-                cocotb.start_soon(Clock(port.port_tx_clk, eth_clock_period, units="ns").start())
+            for k in range(len(iface.port)):
+                cocotb.start_soon(Clock(iface.port[k].port_rx_clk, eth_clock_period, units="ns").start())
+                cocotb.start_soon(Clock(iface.port[k].port_tx_clk, eth_clock_period, units="ns").start())
 
-                port.port_rx_rst.setimmediatevalue(0)
-                port.port_tx_rst.setimmediatevalue(0)
+                iface.port[k].port_rx_rst.setimmediatevalue(0)
+                iface.port[k].port_tx_rst.setimmediatevalue(0)
 
                 mac = EthMac(
-                    tx_clk=port.port_tx_clk,
-                    tx_rst=port.port_tx_rst,
-                    tx_bus=AxiStreamBus.from_prefix(port, "axis_tx"),
-                    tx_ptp_time=port.ptp.tx_ptp_cdc_inst.output_ts,
-                    tx_ptp_ts=port.ptp.axis_tx_ptp_ts,
-                    tx_ptp_ts_tag=port.ptp.axis_tx_ptp_ts_tag,
-                    tx_ptp_ts_valid=port.ptp.axis_tx_ptp_ts_valid,
-                    rx_clk=port.port_rx_clk,
-                    rx_rst=port.port_rx_rst,
-                    rx_bus=AxiStreamBus.from_prefix(port, "axis_rx"),
-                    rx_ptp_time=port.ptp.rx_ptp_cdc_inst.output_ts,
+                    tx_clk=iface.port[k].port_tx_clk,
+                    tx_rst=iface.port[k].port_tx_rst,
+                    tx_bus=AxiStreamBus.from_prefix(iface.interface_inst.port[k].port_inst.port_tx_inst, "m_axis_tx"),
+                    tx_ptp_time=iface.port[k].port_tx_ptp_ts_96,
+                    tx_ptp_ts=iface.interface_inst.port[k].port_inst.port_tx_inst.s_axis_tx_cpl_ts,
+                    tx_ptp_ts_tag=iface.interface_inst.port[k].port_inst.port_tx_inst.s_axis_tx_cpl_tag,
+                    tx_ptp_ts_valid=iface.interface_inst.port[k].port_inst.port_tx_inst.s_axis_tx_cpl_valid,
+                    rx_clk=iface.port[k].port_rx_clk,
+                    rx_rst=iface.port[k].port_rx_rst,
+                    rx_bus=AxiStreamBus.from_prefix(iface.interface_inst.port[k].port_inst.port_rx_inst, "s_axis_rx"),
+                    rx_ptp_time=iface.port[k].port_rx_ptp_ts_96,
                     ifg=12, speed=eth_speed
                 )
 
                 self.port_mac.append(mac)
+
+        dut.eth_tx_status.setimmediatevalue(2**len(dut.core_pcie_inst.core_inst.m_axis_tx_tvalid)-1)
+        dut.eth_rx_status.setimmediatevalue(2**len(dut.core_pcie_inst.core_inst.m_axis_tx_tvalid)-1)
 
         dut.ctrl_reg_wr_wait.setimmediatevalue(0)
         dut.ctrl_reg_wr_ack.setimmediatevalue(0)
@@ -320,7 +356,9 @@ class TB(object):
         dut.ctrl_reg_rd_wait.setimmediatevalue(0)
         dut.ctrl_reg_rd_ack.setimmediatevalue(0)
 
-        dut.ptp_sample_clk.setimmediatevalue(0)
+        cocotb.start_soon(Clock(dut.ptp_clk, 6.4, units="ns").start())
+        dut.ptp_rst.setimmediatevalue(0)
+        cocotb.start_soon(Clock(dut.ptp_sample_clk, 8, units="ns").start())
 
         dut.s_axis_stat_tdata.setimmediatevalue(0)
         dut.s_axis_stat_tid.setimmediatevalue(0)
@@ -335,12 +373,16 @@ class TB(object):
             mac.rx.reset.setimmediatevalue(0)
             mac.tx.reset.setimmediatevalue(0)
 
+        self.dut.ptp_rst.setimmediatevalue(0)
+
         await RisingEdge(self.dut.clk)
         await RisingEdge(self.dut.clk)
 
         for mac in self.port_mac:
             mac.rx.reset.setimmediatevalue(1)
             mac.tx.reset.setimmediatevalue(1)
+
+        self.dut.ptp_rst.setimmediatevalue(1)
 
         await FallingEdge(self.dut.rst)
         await Timer(100, 'ns')
@@ -352,7 +394,9 @@ class TB(object):
             mac.rx.reset.setimmediatevalue(0)
             mac.tx.reset.setimmediatevalue(0)
 
-        await self.rc.enumerate(enable_bus_mastering=True, configure_msi=True)
+        self.dut.ptp_rst.setimmediatevalue(0)
+
+        await self.rc.enumerate()
 
     async def _run_loopback(self):
         while True:
@@ -367,21 +411,21 @@ class TB(object):
 @cocotb.test()
 async def run_test_nic(dut):
 
-    tb = TB(dut)
+    tb = TB(dut, msix_count=2**len(dut.core_pcie_inst.irq_index))
 
     await tb.init()
 
     tb.log.info("Init driver")
-    await tb.driver.init_pcie_dev(tb.rc, tb.dev.functions[0].pcie_id)
+    await tb.driver.init_pcie_dev(tb.rc.find_device(tb.dev.functions[0].pcie_id))
     for interface in tb.driver.interfaces:
         await interface.open()
 
     # enable queues
     tb.log.info("Enable queues")
     for interface in tb.driver.interfaces:
-        await interface.ports[0].schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
+        await interface.sched_blocks[0].schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
         for k in range(interface.tx_queue_count):
-            await interface.ports[0].schedulers[0].hw_regs.write_dword(4*k, 0x00000003)
+            await interface.sched_blocks[0].schedulers[0].hw_regs.write_dword(4*k, 0x00000003)
 
     # wait for all writes to complete
     await tb.driver.hw_regs.read_dword(0)
@@ -428,6 +472,61 @@ async def run_test_nic(dut):
     assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
     assert Ether(pkt.data).build() == test_pkt.build()
 
+    tb.log.info("Queue mapping offset test")
+
+    data = bytearray([x % 256 for x in range(1024)])
+
+    tb.loopback_enable = True
+
+    for k in range(4):
+        await tb.driver.interfaces[0].set_rx_queue_map_offset(0, k)
+
+        await tb.driver.interfaces[0].start_xmit(data, 0)
+
+        pkt = await tb.driver.interfaces[0].recv()
+
+        tb.log.info("Packet: %s", pkt)
+        assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
+        assert pkt.queue == k
+
+    tb.loopback_enable = False
+
+    await tb.driver.interfaces[0].set_rx_queue_map_offset(0, 0)
+
+    tb.log.info("Queue mapping RSS mask test")
+
+    await tb.driver.interfaces[0].set_rx_queue_map_rss_mask(0, 0x00000003)
+
+    tb.loopback_enable = True
+
+    queues = set()
+
+    for k in range(64):
+        payload = bytes([x % 256 for x in range(256)])
+        eth = Ether(src='5A:51:52:53:54:55', dst='DA:D1:D2:D3:D4:D5')
+        ip = IP(src='192.168.1.100', dst='192.168.1.101')
+        udp = UDP(sport=1, dport=k+0)
+        test_pkt = eth / ip / udp / payload
+
+        test_pkt2 = test_pkt.copy()
+        test_pkt2[UDP].chksum = scapy.utils.checksum(bytes(test_pkt2[UDP]))
+
+        await tb.driver.interfaces[0].start_xmit(test_pkt2.build(), 0, 34, 6)
+
+    for k in range(64):
+        pkt = await tb.driver.interfaces[0].recv()
+
+        tb.log.info("Packet: %s", pkt)
+        assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
+
+        queues.add(pkt.queue)
+
+    assert len(queues) == 4
+
+    tb.loopback_enable = False
+
+    await tb.driver.interfaces[0].set_rx_queue_map_rss_mask(0, 0)
+
     tb.log.info("Multiple small packets")
 
     count = 64
@@ -444,6 +543,25 @@ async def run_test_nic(dut):
 
         tb.log.info("Packet: %s", pkt)
         assert pkt.data == pkts[k]
+        assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
+
+    tb.loopback_enable = False
+
+    tb.log.info("Multiple TX queues")
+
+    count = 1024
+
+    pkts = [bytearray([(x+k) % 256 for x in range(60)]) for k in range(count)]
+
+    tb.loopback_enable = True
+
+    for k in range(len(pkts)):
+        await tb.driver.interfaces[0].start_xmit(pkts[k], k % tb.driver.interfaces[0].tx_queue_count)
+
+    for k in range(count):
+        pkt = await tb.driver.interfaces[0].recv()
+
+        tb.log.info("Packet: %s", pkt)
         assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
 
     tb.loopback_enable = False
@@ -509,16 +627,17 @@ async def run_test_nic(dut):
 
         tb.loopback_enable = False
 
-    if len(tb.driver.interfaces[0].ports) > 1:
-        tb.log.info("All interface 0 ports")
+    if len(tb.driver.interfaces[0].sched_blocks) > 1:
+        tb.log.info("All interface 0 scheduler blocks")
 
-        for port in tb.driver.interfaces[0].ports:
-            await port.schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
-            for k in range(port.interface.tx_queue_count):
-                if k % len(tb.driver.interfaces[0].ports) == port.index:
-                    await port.schedulers[0].hw_regs.write_dword(4*k, 0x00000003)
+        for block in tb.driver.interfaces[0].sched_blocks:
+            await block.schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
+            await tb.driver.interfaces[0].set_rx_queue_map_offset(block.index, block.index)
+            for k in range(block.interface.tx_queue_count):
+                if k % len(tb.driver.interfaces[0].sched_blocks) == block.index:
+                    await block.schedulers[0].hw_regs.write_dword(4*k, 0x00000003)
                 else:
-                    await port.schedulers[0].hw_regs.write_dword(4*k, 0x00000000)
+                    await block.schedulers[0].hw_regs.write_dword(4*k, 0x00000000)
 
         count = 64
 
@@ -526,8 +645,10 @@ async def run_test_nic(dut):
 
         tb.loopback_enable = True
 
+        queues = set()
+
         for k, p in enumerate(pkts):
-            await tb.driver.interfaces[0].start_xmit(p, k % len(tb.driver.interfaces[0].ports))
+            await tb.driver.interfaces[0].start_xmit(p, k % len(tb.driver.interfaces[0].sched_blocks))
 
         for k in range(count):
             pkt = await tb.driver.interfaces[0].recv()
@@ -536,10 +657,15 @@ async def run_test_nic(dut):
             # assert pkt.data == pkts[k]
             assert pkt.rx_checksum == ~scapy.utils.checksum(bytes(pkt.data[14:])) & 0xffff
 
+            queues.add(pkt.queue)
+
+        assert len(queues) == len(tb.driver.interfaces[0].sched_blocks)
+
         tb.loopback_enable = False
 
-        for port in tb.driver.interfaces[0].ports[1:]:
-            await port.schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000000)
+        for block in tb.driver.interfaces[0].sched_blocks[1:]:
+            await block.schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000000)
+            await tb.driver.interfaces[0].set_rx_queue_map_offset(block.index, 0)
 
     await Timer(1000, 'ns')
 
@@ -552,7 +678,7 @@ async def run_test_nic(dut):
     tb.loopback_enable = True
 
     # configure TDMA scheduler
-    tdma_sch_rb = tb.driver.interfaces[0].ports[0].reg_blocks.find(mqnic.MQNIC_RB_TDMA_SCH_TYPE, mqnic.MQNIC_RB_TDMA_SCH_VER, 0)
+    tdma_sch_rb = tb.driver.interfaces[0].sched_blocks[0].reg_blocks.find(mqnic.MQNIC_RB_TDMA_SCH_TYPE, mqnic.MQNIC_RB_TDMA_SCH_VER, 0)
     await tdma_sch_rb.write_dword(mqnic.MQNIC_RB_TDMA_SCH_REG_SCH_PERIOD_FNS,   0)
     await tdma_sch_rb.write_dword(mqnic.MQNIC_RB_TDMA_SCH_REG_SCH_PERIOD_NS,    40000)
     await tdma_sch_rb.write_dword(mqnic.MQNIC_RB_TDMA_SCH_REG_SCH_PERIOD_SEC_L, 0)
@@ -568,15 +694,15 @@ async def run_test_nic(dut):
     await tdma_sch_rb.write_dword(mqnic.MQNIC_RB_TDMA_SCH_REG_CTRL, 0x00000001)
 
     # enable queues with global enable off
-    await tb.driver.interfaces[0].ports[0].schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
+    await tb.driver.interfaces[0].sched_blocks[0].schedulers[0].rb.write_dword(mqnic.MQNIC_RB_SCHED_RR_REG_CTRL, 0x00000001)
     for k in range(tb.driver.interfaces[0].tx_queue_count):
-        await tb.driver.interfaces[0].ports[0].schedulers[0].hw_regs.write_dword(4*k, 0x00000001)
+        await tb.driver.interfaces[0].sched_blocks[0].schedulers[0].hw_regs.write_dword(4*k, 0x00000001)
 
     # configure slots
-    await tb.driver.interfaces[0].ports[0].schedulers[1].hw_regs.write_dword(8*0, 0x00000001)
-    await tb.driver.interfaces[0].ports[0].schedulers[1].hw_regs.write_dword(8*1, 0x00000002)
-    await tb.driver.interfaces[0].ports[0].schedulers[1].hw_regs.write_dword(8*2, 0x00000004)
-    await tb.driver.interfaces[0].ports[0].schedulers[1].hw_regs.write_dword(8*3, 0x00000008)
+    await tb.driver.interfaces[0].sched_blocks[0].schedulers[1].hw_regs.write_dword(8*0, 0x00000001)
+    await tb.driver.interfaces[0].sched_blocks[0].schedulers[1].hw_regs.write_dword(8*1, 0x00000002)
+    await tb.driver.interfaces[0].sched_blocks[0].schedulers[1].hw_regs.write_dword(8*2, 0x00000004)
+    await tb.driver.interfaces[0].sched_blocks[0].schedulers[1].hw_regs.write_dword(8*3, 0x00000008)
 
     # wait for all writes to complete
     await tb.driver.hw_regs.read_dword(0)
@@ -601,7 +727,7 @@ async def run_test_nic(dut):
     lst = []
 
     for k in range(64):
-        lst.append(await tb.driver.hw_regs.read_dword(0x010000+k*8))
+        lst.append(await tb.driver.hw_regs.read_dword(0x020000+k*8))
 
     print(lst)
 
@@ -621,17 +747,18 @@ pcie_rtl_dir = os.path.abspath(os.path.join(lib_dir, 'pcie', 'rtl'))
 
 
 @pytest.mark.parametrize(("if_count", "ports_per_if", "axis_pcie_data_width",
-        "axis_eth_data_width", "axis_eth_sync_data_width"), [
-            (1, 1, 256, 64, 64),
-            (2, 1, 256, 64, 64),
-            (1, 2, 256, 64, 64),
-            (1, 1, 256, 64, 128),
-            (1, 1, 512, 64, 64),
-            (1, 1, 512, 64, 128),
-            (1, 1, 512, 512, 512),
+        "axis_eth_data_width", "axis_eth_sync_data_width", "ptp_ts_enable"), [
+            (1, 1, 256, 64, 64, 1),
+            (1, 1, 256, 64, 64, 0),
+            (2, 1, 256, 64, 64, 1),
+            (1, 2, 256, 64, 64, 1),
+            (1, 1, 256, 64, 128, 1),
+            (1, 1, 512, 64, 64, 1),
+            (1, 1, 512, 64, 128, 1),
+            (1, 1, 512, 512, 512, 1),
         ])
 def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_width,
-        axis_eth_data_width, axis_eth_sync_data_width):
+        axis_eth_data_width, axis_eth_sync_data_width, ptp_ts_enable):
     dut = "mqnic_core_pcie_us"
     module = os.path.splitext(os.path.basename(__file__))[0]
     toplevel = dut
@@ -643,11 +770,18 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
         os.path.join(rtl_dir, "mqnic_interface.v"),
         os.path.join(rtl_dir, "mqnic_interface_tx.v"),
         os.path.join(rtl_dir, "mqnic_interface_rx.v"),
+        os.path.join(rtl_dir, "mqnic_port.v"),
+        os.path.join(rtl_dir, "mqnic_port_tx.v"),
+        os.path.join(rtl_dir, "mqnic_port_rx.v"),
         os.path.join(rtl_dir, "mqnic_egress.v"),
         os.path.join(rtl_dir, "mqnic_ingress.v"),
+        os.path.join(rtl_dir, "mqnic_l2_egress.v"),
+        os.path.join(rtl_dir, "mqnic_l2_ingress.v"),
+        os.path.join(rtl_dir, "mqnic_rx_queue_map.v"),
         os.path.join(rtl_dir, "mqnic_ptp.v"),
         os.path.join(rtl_dir, "mqnic_ptp_clock.v"),
         os.path.join(rtl_dir, "mqnic_ptp_perout.v"),
+        os.path.join(rtl_dir, "mqnic_rb_clk_info.v"),
         os.path.join(rtl_dir, "cpl_write.v"),
         os.path.join(rtl_dir, "cpl_op_mux.v"),
         os.path.join(rtl_dir, "desc_fetch.v"),
@@ -676,7 +810,6 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
         os.path.join(eth_rtl_dir, "ptp_clock.v"),
         os.path.join(eth_rtl_dir, "ptp_clock_cdc.v"),
         os.path.join(eth_rtl_dir, "ptp_perout.v"),
-        os.path.join(eth_rtl_dir, "ptp_ts_extract.v"),
         os.path.join(axi_rtl_dir, "axil_crossbar.v"),
         os.path.join(axi_rtl_dir, "axil_crossbar_addr.v"),
         os.path.join(axi_rtl_dir, "axil_crossbar_rd.v"),
@@ -701,6 +834,10 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
         os.path.join(pcie_rtl_dir, "pcie_tlp_demux.v"),
         os.path.join(pcie_rtl_dir, "pcie_tlp_demux_bar.v"),
         os.path.join(pcie_rtl_dir, "pcie_tlp_mux.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fifo.v"),
+        os.path.join(pcie_rtl_dir, "pcie_tlp_fifo_raw.v"),
+        os.path.join(pcie_rtl_dir, "pcie_msix.v"),
+        os.path.join(pcie_rtl_dir, "irq_rate_limit.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie_rd.v"),
         os.path.join(pcie_rtl_dir, "dma_if_pcie_wr.v"),
@@ -719,7 +856,6 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
         os.path.join(pcie_rtl_dir, "pcie_us_if_cc.v"),
         os.path.join(pcie_rtl_dir, "pcie_us_if_cq.v"),
         os.path.join(pcie_rtl_dir, "pcie_us_cfg.v"),
-        os.path.join(pcie_rtl_dir, "pcie_us_msi.v"),
         os.path.join(pcie_rtl_dir, "pulse_merge.v"),
     ]
 
@@ -728,19 +864,31 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
     # Structural configuration
     parameters['IF_COUNT'] = if_count
     parameters['PORTS_PER_IF'] = ports_per_if
+    parameters['SCHED_PER_IF'] = ports_per_if
+
+    # Clock configuration
+    parameters['CLK_PERIOD_NS_NUM'] = 4
+    parameters['CLK_PERIOD_NS_DENOM'] = 1
 
     # PTP configuration
-    parameters['PTP_USE_SAMPLE_CLOCK'] = 0
+    parameters['PTP_CLK_PERIOD_NS_NUM'] = 32
+    parameters['PTP_CLK_PERIOD_NS_DENOM'] = 5
+    parameters['PTP_CLOCK_PIPELINE'] = 0
+    parameters['PTP_CLOCK_CDC_PIPELINE'] = 0
+    parameters['PTP_USE_SAMPLE_CLOCK'] = 1
+    parameters['PTP_SEPARATE_TX_CLOCK'] = 0
     parameters['PTP_SEPARATE_RX_CLOCK'] = 0
+    parameters['PTP_PORT_CDC_PIPELINE'] = 0
     parameters['PTP_PEROUT_ENABLE'] = 0
     parameters['PTP_PEROUT_COUNT'] = 1
 
-    # Queue manager configuration (interface)
+    # Queue manager configuration
     parameters['EVENT_QUEUE_OP_TABLE_SIZE'] = 32
     parameters['TX_QUEUE_OP_TABLE_SIZE'] = 32
     parameters['RX_QUEUE_OP_TABLE_SIZE'] = 32
     parameters['TX_CPL_QUEUE_OP_TABLE_SIZE'] = parameters['TX_QUEUE_OP_TABLE_SIZE']
     parameters['RX_CPL_QUEUE_OP_TABLE_SIZE'] = parameters['RX_QUEUE_OP_TABLE_SIZE']
+    parameters['EVENT_QUEUE_INDEX_WIDTH'] = 6
     parameters['TX_QUEUE_INDEX_WIDTH'] = 8
     parameters['RX_QUEUE_INDEX_WIDTH'] = 8
     parameters['TX_CPL_QUEUE_INDEX_WIDTH'] = parameters['TX_QUEUE_INDEX_WIDTH']
@@ -751,23 +899,21 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
     parameters['TX_CPL_QUEUE_PIPELINE'] = parameters['TX_QUEUE_PIPELINE']
     parameters['RX_CPL_QUEUE_PIPELINE'] = parameters['RX_QUEUE_PIPELINE']
 
-    # TX and RX engine configuration (port)
+    # TX and RX engine configuration
     parameters['TX_DESC_TABLE_SIZE'] = 32
     parameters['RX_DESC_TABLE_SIZE'] = 32
 
-    # Scheduler configuration (port)
+    # Scheduler configuration
     parameters['TX_SCHEDULER_OP_TABLE_SIZE'] = parameters['TX_DESC_TABLE_SIZE']
     parameters['TX_SCHEDULER_PIPELINE'] = parameters['TX_QUEUE_PIPELINE']
     parameters['TDMA_INDEX_WIDTH'] = 6
 
-    # Timestamping configuration (port)
-    parameters['PTP_TS_ENABLE'] = 1
-    parameters['TX_PTP_TS_FIFO_DEPTH'] = 32
-    parameters['RX_PTP_TS_FIFO_DEPTH'] = 32
-
-    # Interface configuration (port)
+    # Interface configuration
+    parameters['PTP_TS_ENABLE'] = ptp_ts_enable
+    parameters['TX_CPL_ENABLE'] = parameters['PTP_TS_ENABLE']
+    parameters['TX_CPL_FIFO_DEPTH'] = 32
+    parameters['TX_TAG_WIDTH'] = 16
     parameters['TX_CHECKSUM_ENABLE'] = 1
-    parameters['RX_RSS_ENABLE'] = 1
     parameters['RX_HASH_ENABLE'] = 1
     parameters['RX_CHECKSUM_ENABLE'] = 1
     parameters['TX_FIFO_DEPTH'] = 32768
@@ -778,6 +924,7 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
     parameters['RX_RAM_SIZE'] = 131072
 
     # Application block configuration
+    parameters['APP_ID'] = 0x00000000
     parameters['APP_ENABLE'] = 0
     parameters['APP_CTRL_ENABLE'] = 1
     parameters['APP_DMA_ENABLE'] = 1
@@ -787,22 +934,20 @@ def test_mqnic_core_pcie_us(request, if_count, ports_per_if, axis_pcie_data_widt
     parameters['APP_STAT_ENABLE'] = 1
 
     # DMA interface configuration
+    parameters['DMA_IMM_ENABLE'] = 0
+    parameters['DMA_IMM_WIDTH'] = 32
     parameters['DMA_LEN_WIDTH'] = 16
     parameters['DMA_TAG_WIDTH'] = 16
+    parameters['RAM_ADDR_WIDTH'] = (max(parameters['TX_RAM_SIZE'], parameters['RX_RAM_SIZE'])-1).bit_length()
     parameters['RAM_PIPELINE'] = 2
 
     # PCIe interface configuration
     parameters['AXIS_PCIE_DATA_WIDTH'] = axis_pcie_data_width
     parameters['PF_COUNT'] = 1
     parameters['VF_COUNT'] = 0
-    parameters['PCIE_TAG_COUNT'] = 64
-    parameters['PCIE_DMA_READ_OP_TABLE_SIZE'] = parameters['PCIE_TAG_COUNT']
-    parameters['PCIE_DMA_READ_TX_LIMIT'] = 16
-    parameters['PCIE_DMA_READ_TX_FC_ENABLE'] = 1
-    parameters['PCIE_DMA_WRITE_OP_TABLE_SIZE'] = 16
-    parameters['PCIE_DMA_WRITE_TX_LIMIT'] = 3
-    parameters['PCIE_DMA_WRITE_TX_FC_ENABLE'] = 1
-    parameters['MSI_COUNT'] = 32
+
+    # Interrupt configuration
+    parameters['IRQ_INDEX_WIDTH'] = parameters['EVENT_QUEUE_INDEX_WIDTH']
 
     # AXI lite interface configuration (control)
     parameters['AXIL_CTRL_DATA_WIDTH'] = 32

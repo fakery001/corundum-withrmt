@@ -50,13 +50,13 @@ module eth_mac_phy_10g_fifo #
     parameter BITSLIP_LOW_CYCLES = 8,
     parameter COUNT_125US = 125000/6.4,
     parameter TX_FIFO_DEPTH = 4096,
-    parameter TX_FIFO_PIPELINE_OUTPUT = 2,
+    parameter TX_FIFO_RAM_PIPELINE = 1,
     parameter TX_FRAME_FIFO = 1,
     parameter TX_DROP_OVERSIZE_FRAME = TX_FRAME_FIFO,
     parameter TX_DROP_BAD_FRAME = TX_DROP_OVERSIZE_FRAME,
     parameter TX_DROP_WHEN_FULL = 0,
     parameter RX_FIFO_DEPTH = 4096,
-    parameter RX_FIFO_PIPELINE_OUTPUT = 2,
+    parameter RX_FIFO_RAM_PIPELINE = 1,
     parameter RX_FRAME_FIFO = 1,
     parameter RX_DROP_OVERSIZE_FRAME = RX_FRAME_FIFO,
     parameter RX_DROP_BAD_FRAME = RX_DROP_OVERSIZE_FRAME,
@@ -131,6 +131,7 @@ module eth_mac_phy_10g_fifo #
     output wire                       rx_bad_block,
     output wire                       rx_block_lock,
     output wire                       rx_high_ber,
+    output wire                       rx_status,
     output wire                       rx_fifo_overflow,
     output wire                       rx_fifo_bad_frame,
     output wire                       rx_fifo_good_frame,
@@ -206,31 +207,38 @@ wire rx_error_bad_fcs_int;
 wire rx_bad_block_int;
 wire rx_block_lock_int;
 wire rx_high_ber_int;
+wire rx_status_int;
 
-reg [4:0] rx_sync_reg_1 = 5'd0;
-reg [4:0] rx_sync_reg_2 = 5'd0;
-reg [4:0] rx_sync_reg_3 = 5'd0;
-reg [4:0] rx_sync_reg_4 = 5'd0;
+reg [5:0] rx_sync_reg_1 = 6'd0;
+reg [5:0] rx_sync_reg_2 = 6'd0;
+reg [5:0] rx_sync_reg_3 = 6'd0;
+reg [5:0] rx_sync_reg_4 = 6'd0;
 
 assign rx_error_bad_frame = rx_sync_reg_3[0] ^ rx_sync_reg_4[0];
 assign rx_error_bad_fcs = rx_sync_reg_3[1] ^ rx_sync_reg_4[1];
 assign rx_bad_block = rx_sync_reg_3[2] ^ rx_sync_reg_4[2];
-assign rx_block_lock = rx_sync_reg_3[3] ^ rx_sync_reg_4[3];
-assign rx_high_ber = rx_sync_reg_3[4] ^ rx_sync_reg_4[4];
+assign rx_block_lock = rx_sync_reg_4[3];
+assign rx_high_ber = rx_sync_reg_4[4];
+assign rx_status = rx_sync_reg_4[5];
 
 always @(posedge rx_clk or posedge rx_rst) begin
     if (rx_rst) begin
-        rx_sync_reg_1 <= 5'd0;
+        rx_sync_reg_1 <= 6'd0;
     end else begin
-        rx_sync_reg_1 <= rx_sync_reg_1 ^ {rx_high_ber_int, rx_block_lock_int, rx_bad_block_int, rx_error_bad_fcs_int, rx_error_bad_frame_int};
+        rx_sync_reg_1[0] <= rx_sync_reg_1[0] ^ rx_error_bad_frame_int;
+        rx_sync_reg_1[1] <= rx_sync_reg_1[1] ^ rx_error_bad_fcs_int;
+        rx_sync_reg_1[2] <= rx_sync_reg_1[2] ^ rx_bad_block_int;
+        rx_sync_reg_1[3] <= rx_block_lock_int;
+        rx_sync_reg_1[4] <= rx_high_ber_int;
+        rx_sync_reg_1[5] <= rx_status_int;
     end
 end
 
 always @(posedge logic_clk or posedge logic_rst) begin
     if (logic_rst) begin
-        rx_sync_reg_2 <= 5'd0;
-        rx_sync_reg_3 <= 5'd0;
-        rx_sync_reg_4 <= 5'd0;
+        rx_sync_reg_2 <= 6'd0;
+        rx_sync_reg_3 <= 6'd0;
+        rx_sync_reg_4 <= 6'd0;
     end else begin
         rx_sync_reg_2 <= rx_sync_reg_1;
         rx_sync_reg_3 <= rx_sync_reg_2;
@@ -241,11 +249,11 @@ end
 // PTP timestamping
 generate
 
-if (TX_PTP_TS_ENABLE) begin
+if (TX_PTP_TS_ENABLE) begin : tx_ptp
     
     ptp_clock_cdc #(
         .TS_WIDTH(PTP_TS_WIDTH),
-        .NS_WIDTH(4),
+        .NS_WIDTH(6),
         .FNS_WIDTH(16),
         .USE_SAMPLE_CLOCK(PTP_USE_SAMPLE_CLOCK)
     )
@@ -275,10 +283,9 @@ if (TX_PTP_TS_ENABLE) begin
         .FRAME_FIFO(0)
     )
     tx_ptp_ts_fifo (
-        .async_rst(logic_rst | tx_rst),
-
         // AXI input
         .s_clk(tx_clk),
+        .s_rst(tx_rst),
         .s_axis_tdata(tx_axis_ptp_ts_96),
         .s_axis_tkeep(0),
         .s_axis_tvalid(tx_axis_ptp_ts_valid),
@@ -290,6 +297,7 @@ if (TX_PTP_TS_ENABLE) begin
 
         // AXI output
         .m_clk(logic_clk),
+        .m_rst(logic_rst),
         .m_axis_tdata(m_axis_tx_ptp_ts_96),
         .m_axis_tkeep(),
         .m_axis_tvalid(m_axis_tx_ptp_ts_valid),
@@ -318,11 +326,11 @@ end else begin
 
 end
 
-if (RX_PTP_TS_ENABLE) begin
+if (RX_PTP_TS_ENABLE) begin : rx_ptp
 
     ptp_clock_cdc #(
         .TS_WIDTH(PTP_TS_WIDTH),
-        .NS_WIDTH(4),
+        .NS_WIDTH(6),
         .FNS_WIDTH(16),
         .USE_SAMPLE_CLOCK(PTP_USE_SAMPLE_CLOCK)
     )
@@ -411,6 +419,7 @@ eth_mac_phy_10g_inst (
     .rx_bad_block(rx_bad_block_int),
     .rx_block_lock(rx_block_lock_int),
     .rx_high_ber(rx_high_ber_int),
+    .rx_status(rx_status_int),
 
     .ifg_delay(ifg_delay),
 
@@ -430,7 +439,7 @@ axis_async_fifo_adapter #(
     .DEST_ENABLE(0),
     .USER_ENABLE(1),
     .USER_WIDTH(TX_USER_WIDTH),
-    .PIPELINE_OUTPUT(TX_FIFO_PIPELINE_OUTPUT),
+    .RAM_PIPELINE(TX_FIFO_RAM_PIPELINE),
     .FRAME_FIFO(TX_FRAME_FIFO),
     .USER_BAD_FRAME_VALUE(1'b1),
     .USER_BAD_FRAME_MASK(1'b1),
@@ -482,7 +491,7 @@ axis_async_fifo_adapter #(
     .DEST_ENABLE(0),
     .USER_ENABLE(1),
     .USER_WIDTH(RX_USER_WIDTH),
-    .PIPELINE_OUTPUT(RX_FIFO_PIPELINE_OUTPUT),
+    .RAM_PIPELINE(RX_FIFO_RAM_PIPELINE),
     .FRAME_FIFO(RX_FRAME_FIFO),
     .USER_BAD_FRAME_VALUE(1'b1),
     .USER_BAD_FRAME_MASK(1'b1),

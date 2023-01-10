@@ -9,28 +9,36 @@ See fpga/app/template/README for further details.
 
 GitHub repository: https://github.com/corundum/corundum
 
+Documentation: https://docs.corundum.io/
+
 GitHub wiki: https://github.com/corundum/corundum/wiki
 
 Google group: https://groups.google.com/d/forum/corundum-nic
 
-Slack workspace: https://join.slack.com/t/corundumworkspace/shared_invite/zt-tj5azsbm-V9LV8L7ugSRDBpe2JiPKMA
+Zulip: https://corundum.zulipchat.com/
 
 ## Introduction
 
-Corundum is an open-source, high-performance FPGA-based NIC.  Features include a high performance datapath, 10G/25G/100G Ethernet, PCI express gen 3, a custom, high performance, tightly-integrated PCIe DMA engine, many (1000+) transmit, receive, completion, and event queues, scatter/gather DMA, MSI interrupts, multiple interfaces, multiple ports per interface, per-port transmit scheduling including high precision TDMA, flow hashing, RSS, checksum offloading, and native IEEE 1588 PTP timestamping.  A Linux driver is included that integrates with the Linux networking stack.  Development and debugging is facilitated by an extensive simulation framework that covers the entire system from a simulation model of the driver and PCI express interface on one side to the Ethernet interfaces on the other side.
+Corundum is an open-source, high-performance FPGA-based NIC and platform for in-network compute.  Features include a high performance datapath, 10G/25G/100G Ethernet, PCI express gen 3, a custom, high performance, tightly-integrated PCIe DMA engine, many (1000+) transmit, receive, completion, and event queues, scatter/gather DMA, MSI interrupts, multiple interfaces, multiple ports per interface, per-port transmit scheduling including high precision TDMA, flow hashing, RSS, checksum offloading, and native IEEE 1588 PTP timestamping.  A Linux driver is included that integrates with the Linux networking stack.  Development and debugging is facilitated by an extensive simulation framework that covers the entire system from a simulation model of the driver and PCI express interface on one side to the Ethernet interfaces on the other side.
 
 Corundum has several unique architectural features.  First, transmit, receive, completion, and event queue states are stored efficiently in block RAM or ultra RAM, enabling support for thousands of individually-controllable queues.  These queues are associated with interfaces, and each interface can have multiple ports, each with its own independent scheduler.  This enables extremely fine-grained control over packet transmission.  Coupled with PTP time synchronization, this enables high precision TDMA.
 
 Corundum also provides an application section for implementing custom logic.  The application section has a dedicated PCIe BAR for control and a number of interfaces that provide access to the core datapath and DMA infrastructure.
 
-Corundum currently supports Xilinx Virtex 7, UltraScale, and UltraScale+ series devices.  Designs are included for the following FPGA boards:
+Corundum currently supports devices from both Xilinx and Intel, on boards from several different manufacturers.  Designs are included for the following FPGA boards:
 
 *  Alpha Data ADM-PCIE-9V3 (Xilinx Virtex UltraScale+ XCVU3P)
-*  Exablaze ExaNIC X10/Cisco Nexus K35-S (Xilinx Kintex UltraScale XCKU035)
-*  Exablaze ExaNIC X25/Cisco Nexus K3P-S (Xilinx Kintex UltraScale+ XCKU3P)
+*  Dini Group DNPCIe_40G_KU_LL_2QSFP (Xilinx Kintex UltraScale XCKU040)
+*  Cisco Nexus K35-S (Xilinx Kintex UltraScale XCKU035)
+*  Cisco Nexus K3P-S (Xilinx Kintex UltraScale+ XCKU3P)
+*  Cisco Nexus K3P-Q (Xilinx Kintex UltraScale+ XCKU3P)
 *  Silicom fb2CG@KU15P (Xilinx Kintex UltraScale+ XCKU15P)
 *  NetFPGA SUME (Xilinx Virtex 7 XC7V690T)
-*  Intel Stratix 10 MX dev kit (Intel Stratix 10 MX 1SM21CHU1F53E1VG)
+*  BittWare 250-SoC (Xilinx Zynq UltraScale+ XCZU19EG)
+*  BittWare XUP-P3R (Xilinx Virtex UltraScale+ XCVU9P)
+*  Intel Stratix 10 MX dev kit (Intel Stratix 10 MX 2100)
+*  Intel Stratix 10 DX dev kit (Intel Stratix 10 DX 2800)
+*  Terasic DE10-Agilex (Intel Agilex F 014)
 *  Xilinx Alveo U50 (Xilinx Virtex UltraScale+ XCU50)
 *  Xilinx Alveo U200 (Xilinx Virtex UltraScale+ XCU200)
 *  Xilinx Alveo U250 (Xilinx Virtex UltraScale+ XCU250)
@@ -38,6 +46,7 @@ Corundum currently supports Xilinx Virtex 7, UltraScale, and UltraScale+ series 
 *  Xilinx VCU108 (Xilinx Virtex UltraScale XCVU095)
 *  Xilinx VCU118 (Xilinx Virtex UltraScale+ XCVU9P)
 *  Xilinx VCU1525 (Xilinx Virtex UltraScale+ XCVU9P)
+*  Xilinx ZCU102 (Xilinx Zynq UltraScale+ XCZU9EG)
 *  Xilinx ZCU106 (Xilinx Zynq UltraScale+ XCZU7EV)
 
 For operation at 10G and 25G, Corundum uses the open source 10G/25G MAC and PHY modules from the verilog-ethernet repository, no extra licenses are required.  However, it is possible to use other MAC and/or PHY modules.
@@ -46,11 +55,13 @@ Operation at 100G on Xilinx UltraScale+ devices currently requires using the Xil
 
 ## Documentation
 
+For detailed documentation, see https://docs.corundum.io/
+
 ### Block Diagram
 
-![Corundum block diagram](block.svg)
+![Corundum block diagram](docs/source/diagrams/svg/corundum_block.svg)
 
-Block diagram of the Corundum NIC. PCIe HIP: PCIe hard IP core; AXIL M: AXI lite master; DMA IF: DMA interface; PTP HC: PTP hardware clock; TXQ: transmit queue manager; TXCQ: transmit completion queue manager; RXQ: receive queue manager; RXCQ: receive completion queue manager; EQ: event queue manager; MAC + PHY: Ethernet media access controller (MAC) and physical interface layer (PHY).
+Block diagram of the Corundum NIC. PCIe HIP: PCIe hard IP core; AXIL M: AXI lite master; DMA IF: DMA interface; AXI M: AXI master; PHC: PTP hardware clock; TXQ: transmit queue manager; TXCQ: transmit completion queue manager; RXQ: receive queue manager; RXCQ: receive completion queue manager; EQ: event queue manager; MAC + PHY: Ethernet media access controller (MAC) and physical interface layer (PHY).
 
 ### Modules
 
@@ -234,14 +245,14 @@ Running the included testbenches requires [cocotb](https://github.com/cocotb/coc
 
 ## Publications
 
-- A. Forencich, A. C. Snoeren, G. Porter, G. Papen, *Corundum: An Open-Source 100-Gbps NIC,* in FCCM'20, [Paper](https://www.cse.ucsd.edu/~snoeren/papers/corundum-fccm20.pdf), [Presentation](https://www.fccm.org/past/2020/forums/topic/corundum-an-open-source-100-gbps-nic/)
+- A. Forencich, A. C. Snoeren, G. Porter, G. Papen, *Corundum: An Open-Source 100-Gbps NIC,* in FCCM'20. ([FCCM Paper](https://www.cse.ucsd.edu/~snoeren/papers/corundum-fccm20.pdf), [FCCM Presentation](https://www.fccm.org/past/2020/forums/topic/corundum-an-open-source-100-gbps-nic/))
 
-- J. A. Forencich, *System-Level Considerations for Optical Switching in Data Center Networks*, [Paper](https://escholarship.org/uc/item/3mc9070t)
+- J. A. Forencich, *System-Level Considerations for Optical Switching in Data Center Networks*. ([Thesis](https://escholarship.org/uc/item/3mc9070t))
 
 ## Citation
 
-If you use Corundum in your project please cite one of the following papers
-and/or link to the github project:
+If you use Corundum in your project, please cite one of the following papers
+and/or link to the project on GitHub:
 
 ```
 @inproceedings{forencich2020fccm,

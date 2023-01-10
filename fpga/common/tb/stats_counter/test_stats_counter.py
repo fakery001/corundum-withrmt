@@ -75,10 +75,10 @@ class TB(object):
         self.dut.rst.setimmediatevalue(0)
         await RisingEdge(self.dut.clk)
         await RisingEdge(self.dut.clk)
-        self.dut.rst <= 1
+        self.dut.rst.value = 1
         await RisingEdge(self.dut.clk)
         await RisingEdge(self.dut.clk)
-        self.dut.rst <= 0
+        self.dut.rst.value = 0
         await RisingEdge(self.dut.clk)
         await RisingEdge(self.dut.clk)
 
@@ -211,7 +211,7 @@ def test_stats_counter(request, stat_count_width):
     parameters['AXIL_DATA_WIDTH'] = 32
     parameters['AXIL_ADDR_WIDTH'] = parameters['STAT_ID_WIDTH'] + ((parameters['STAT_COUNT_WIDTH']+7)//8-1).bit_length()
     parameters['AXIL_STRB_WIDTH'] = parameters['AXIL_DATA_WIDTH'] // 8
-    parameters['PIPELINE'] = 1
+    parameters['PIPELINE'] = 2
 
     extra_env = {f'PARAM_{k}': str(v) for k, v in parameters.items()}
 

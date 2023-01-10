@@ -35,13 +35,16 @@
 
 #include "mqnic.h"
 
+#include <linux/version.h>
+
 static int mqnic_start_port(struct net_device *ndev)
 {
 	struct mqnic_priv *priv = netdev_priv(ndev);
 	struct mqnic_dev *mdev = priv->mdev;
 	int k;
 
-	dev_info(mdev->dev, "%s on port %d", __func__, priv->index);
+	dev_info(mdev->dev, "%s on interface %d netdev %d", __func__,
+			priv->interface->index, priv->index);
 
 	// set up RX queues
 	for (k = 0; k < min(priv->rx_queue_count, priv->rx_cpl_queue_count); k++) {
@@ -86,18 +89,23 @@ static int mqnic_start_port(struct net_device *ndev)
 	mqnic_interface_set_rx_mtu(priv->interface, ndev->mtu + ETH_HLEN);
 
 	// configure RSS
-	mqnic_interface_set_rss_mask(priv->interface, 0xffffffff);
+	mqnic_interface_set_rx_queue_map_rss_mask(priv->interface, 0, rounddown_pow_of_two(priv->rx_queue_count)-1);
 
-	// enable first port
-	mqnic_activate_port(priv->port[0]);
+	// enable first scheduler
+	mqnic_activate_sched_block(priv->sched_block[0]);
 
 	priv->port_up = true;
 
 	netif_tx_start_all_queues(ndev);
 	netif_device_attach(ndev);
 
-	//netif_carrier_off(ndev);
-	netif_carrier_on(ndev); // TODO link status monitoring
+	if (mqnic_link_status_poll) {
+		priv->link_status = 0;
+		mod_timer(&priv->link_status_timer,
+				jiffies + msecs_to_jiffies(mqnic_link_status_poll));
+	} else {
+		netif_carrier_on(ndev);
+	}
 
 	return 0;
 }
@@ -108,7 +116,11 @@ static int mqnic_stop_port(struct net_device *ndev)
 	struct mqnic_dev *mdev = priv->mdev;
 	int k;
 
-	dev_info(mdev->dev, "%s on port %d", __func__, priv->index);
+	dev_info(mdev->dev, "%s on interface %d netdev %d", __func__,
+			priv->interface->index, priv->index);
+
+	if (mqnic_link_status_poll)
+		del_timer_sync(&priv->link_status_timer);
 
 	netif_tx_lock_bh(ndev);
 //	if (detach)
@@ -123,27 +135,29 @@ static int mqnic_stop_port(struct net_device *ndev)
 	priv->port_up = false;
 	spin_unlock_bh(&priv->stats_lock);
 
-	// disable ports
-	for (k = 0; k < priv->port_count; k++)
-		mqnic_deactivate_port(priv->port[k]);
+	// disable schedulers
+	for (k = 0; k < priv->sched_block_count; k++)
+		mqnic_deactivate_sched_block(priv->sched_block[k]);
 
 	// deactivate TX queues
 	for (k = 0; k < min(priv->tx_queue_count, priv->tx_cpl_queue_count); k++) {
+		napi_disable(&priv->tx_cpl_ring[k]->napi);
+
 		mqnic_deactivate_tx_ring(priv->tx_ring[k]);
 
 		mqnic_deactivate_cq_ring(priv->tx_cpl_ring[k]);
 
-		napi_disable(&priv->tx_cpl_ring[k]->napi);
 		netif_napi_del(&priv->tx_cpl_ring[k]->napi);
 	}
 
 	// deactivate RX queues
 	for (k = 0; k < min(priv->rx_queue_count, priv->rx_cpl_queue_count); k++) {
+		napi_disable(&priv->rx_cpl_ring[k]->napi);
+
 		mqnic_deactivate_rx_ring(priv->rx_ring[k]);
 
 		mqnic_deactivate_cq_ring(priv->rx_cpl_ring[k]);
 
-		napi_disable(&priv->rx_cpl_ring[k]->napi);
 		netif_napi_del(&priv->rx_cpl_ring[k]->napi);
 	}
 
@@ -172,7 +186,8 @@ static int mqnic_open(struct net_device *ndev)
 	ret = mqnic_start_port(ndev);
 
 	if (ret)
-		dev_err(mdev->dev, "Failed to start port: %d", priv->index);
+		dev_err(mdev->dev, "Failed to start port on interface %d netdev %d: %d",
+				priv->interface->index, priv->index, ret);
 
 	mutex_unlock(&mdev->state_lock);
 	return ret;
@@ -189,7 +204,8 @@ static int mqnic_close(struct net_device *ndev)
 	ret = mqnic_stop_port(ndev);
 
 	if (ret)
-		dev_err(mdev->dev, "Failed to stop port: %d", priv->index);
+		dev_err(mdev->dev, "Failed to stop port on interface %d netdev %d: %d",
+				priv->interface->index, priv->index, ret);
 
 	mutex_unlock(&mdev->state_lock);
 	return ret;
@@ -344,8 +360,46 @@ static const struct net_device_ops mqnic_netdev_ops = {
 	.ndo_get_stats64 = mqnic_get_stats64,
 	.ndo_validate_addr = eth_validate_addr,
 	.ndo_change_mtu = mqnic_change_mtu,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+	.ndo_eth_ioctl = mqnic_ioctl,
+#else
 	.ndo_do_ioctl = mqnic_ioctl,
+#endif
 };
+
+static void mqnic_link_status_timeout(struct timer_list *timer)
+{
+	struct mqnic_priv *priv = from_timer(priv, timer, link_status_timer);
+	struct mqnic_if *interface = priv->interface;
+	int k;
+	unsigned int up;
+
+	// "combine" all TX/RX status signals of all ports of this interface
+	for (k = 0, up = 0; k < interface->port_count; k++) {
+		if (!(mqnic_port_get_tx_status(interface->port[k]) & 0x1))
+			continue;
+		if (!(mqnic_port_get_rx_status(interface->port[k]) & 0x1))
+			continue;
+
+		up++;
+	}
+
+	if (up < interface->port_count) {
+		// report carrier off, as soon as a one port's TX/RX status is deasserted
+		if (priv->link_status) {
+			netif_carrier_off(priv->ndev);
+			priv->link_status = !priv->link_status;
+		}
+	} else {
+		// report carrier on, as soon as all ports' TX/RX status is asserted
+		if (!priv->link_status) {
+			netif_carrier_on(priv->ndev);
+			priv->link_status = !priv->link_status;
+		}
+	}
+
+	mod_timer(&priv->link_status_timer, jiffies + msecs_to_jiffies(mqnic_link_status_poll));
+}
 
 int mqnic_create_netdev(struct mqnic_if *interface, struct net_device **ndev_ptr,
 		int index, int dev_port)
@@ -405,9 +459,9 @@ int mqnic_create_netdev(struct mqnic_if *interface, struct net_device **ndev_ptr
 	for (k = 0; k < interface->rx_cpl_queue_count; k++)
 		priv->rx_cpl_ring[k] = interface->rx_cpl_ring[k];
 
-	priv->port_count = interface->port_count;
-	for (k = 0; k < interface->port_count; k++)
-		priv->port[k] = interface->port[k];
+	priv->sched_block_count = interface->sched_block_count;
+	for (k = 0; k < interface->sched_block_count; k++)
+		priv->sched_block[k] = interface->sched_block[k];
 
 	netif_set_real_num_tx_queues(ndev, priv->tx_queue_count);
 	netif_set_real_num_rx_queues(ndev, priv->rx_queue_count);
@@ -419,7 +473,11 @@ int mqnic_create_netdev(struct mqnic_if *interface, struct net_device **ndev_ptr
 		dev_warn(dev, "Exhausted permanent MAC addresses; using random MAC");
 		eth_hw_addr_random(ndev);
 	} else {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
+		eth_hw_addr_set(ndev, mdev->mac_list[dev_port]);
+#else
 		memcpy(ndev->dev_addr, mdev->mac_list[dev_port], ETH_ALEN);
+#endif
 
 		if (!is_valid_ether_addr(ndev->dev_addr)) {
 			dev_warn(dev, "Invalid MAC address in list; using random MAC");
@@ -486,10 +544,13 @@ int mqnic_create_netdev(struct mqnic_if *interface, struct net_device **ndev_ptr
 		ndev->max_mtu = min(interface->max_tx_mtu, interface->max_rx_mtu) - ETH_HLEN;
 
 	netif_carrier_off(ndev);
+	if (mqnic_link_status_poll)
+		timer_setup(&priv->link_status_timer, mqnic_link_status_timeout, 0);
 
 	ret = register_netdev(ndev);
 	if (ret) {
-		dev_err(dev, "netdev registration failed on port %d", index);
+		dev_err(dev, "netdev registration failed on interface %d netdev %d: %d",
+				priv->interface->index, priv->index, ret);
 		goto fail;
 	}
 

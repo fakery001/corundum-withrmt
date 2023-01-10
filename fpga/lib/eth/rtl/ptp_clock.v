@@ -42,7 +42,8 @@ module ptp_clock #
     parameter DRIFT_ENABLE = 1,
     parameter DRIFT_NS = 4'h0,
     parameter DRIFT_FNS = 16'h0002,
-    parameter DRIFT_RATE = 16'h0005
+    parameter DRIFT_RATE = 16'h0005,
+    parameter PIPELINE_OUTPUT = 0
 )
 (
     input  wire                       clk,
@@ -95,6 +96,8 @@ module ptp_clock #
 
 parameter INC_NS_WIDTH = $clog2(2**PERIOD_NS_WIDTH + 2**OFFSET_NS_WIDTH + 2**DRIFT_NS_WIDTH);
 
+localparam [30:0] NS_PER_S = 31'd1_000_000_000;
+
 reg [PERIOD_NS_WIDTH-1:0] period_ns_reg = PERIOD_NS;
 reg [FNS_WIDTH-1:0] period_fns_reg = PERIOD_FNS;
 
@@ -109,6 +112,10 @@ reg [15:0] drift_rate_reg = DRIFT_RATE;
 
 reg [INC_NS_WIDTH-1:0] ts_inc_ns_reg = 0;
 reg [FNS_WIDTH-1:0] ts_inc_fns_reg = 0;
+reg [INC_NS_WIDTH-1:0] ts_inc_ns_delay_reg = 0;
+reg [FNS_WIDTH-1:0] ts_inc_fns_delay_reg = 0;
+reg [30:0] ts_inc_ns_ovf_reg = 0;
+reg [FNS_WIDTH-1:0] ts_inc_fns_ovf_reg = 0;
 
 reg [47:0] ts_96_s_reg = 0;
 reg [29:0] ts_96_ns_reg = 0;
@@ -131,15 +138,78 @@ reg pps_reg = 0;
 
 assign input_adj_active = adj_active_reg;
 
-assign output_ts_96[95:48] = ts_96_s_reg;
-assign output_ts_96[47:46] = 2'b00;
-assign output_ts_96[45:16] = ts_96_ns_reg;
-assign output_ts_96[15:0]  = FNS_WIDTH > 16 ? ts_96_fns_reg >> (FNS_WIDTH-16) : ts_96_fns_reg << (16-FNS_WIDTH);
-assign output_ts_64[63:16] = ts_64_ns_reg;
-assign output_ts_64[15:0]  = FNS_WIDTH > 16 ? ts_64_fns_reg >> (FNS_WIDTH-16) : ts_64_fns_reg << (16-FNS_WIDTH);
-assign output_ts_step = ts_step_reg;
+generate
 
-assign output_pps = pps_reg;
+if (PIPELINE_OUTPUT > 0) begin
+
+    // pipeline
+    (* shreg_extract = "no" *)
+    reg [95:0]  output_ts_96_reg[0:PIPELINE_OUTPUT-1];
+    (* shreg_extract = "no" *)
+    reg [63:0]  output_ts_64_reg[0:PIPELINE_OUTPUT-1];
+    (* shreg_extract = "no" *)
+    reg         output_ts_step_reg[0:PIPELINE_OUTPUT-1];
+    (* shreg_extract = "no" *)
+    reg         output_pps_reg[0:PIPELINE_OUTPUT-1];
+
+    assign output_ts_96 = output_ts_96_reg[PIPELINE_OUTPUT-1];
+    assign output_ts_64 = output_ts_64_reg[PIPELINE_OUTPUT-1];
+    assign output_ts_step = output_ts_step_reg[PIPELINE_OUTPUT-1];
+    assign output_pps = output_pps_reg[PIPELINE_OUTPUT-1];
+
+    integer i;
+
+    initial begin
+        for (i = 0; i < PIPELINE_OUTPUT; i = i + 1) begin
+            output_ts_96_reg[i] = 96'd0;
+            output_ts_64_reg[i] = 64'd0;
+            output_ts_step_reg[i] = 1'b0;
+            output_pps_reg[i] = 1'b0;
+        end
+    end
+
+    always @(posedge clk) begin
+        output_ts_96_reg[0][95:48] <= ts_96_s_reg;
+        output_ts_96_reg[0][47:46] <= 2'b00;
+        output_ts_96_reg[0][45:16] <= ts_96_ns_reg;
+        output_ts_96_reg[0][15:0]  <= {ts_96_fns_reg, 16'd0} >> FNS_WIDTH;
+        output_ts_64_reg[0][63:16] <= ts_64_ns_reg;
+        output_ts_64_reg[0][15:0]  <= {ts_64_fns_reg, 16'd0} >> FNS_WIDTH;
+        output_ts_step_reg[0] <= ts_step_reg;
+        output_pps_reg[0] <= pps_reg;
+
+        for (i = 0; i < PIPELINE_OUTPUT-1; i = i + 1) begin
+            output_ts_96_reg[i+1] <= output_ts_96_reg[i];
+            output_ts_64_reg[i+1] <= output_ts_64_reg[i];
+            output_ts_step_reg[i+1] <= output_ts_step_reg[i];
+            output_pps_reg[i+1] <= output_pps_reg[i];
+        end
+
+        if (rst) begin
+            for (i = 0; i < PIPELINE_OUTPUT; i = i + 1) begin
+                output_ts_96_reg[i] <= 96'd0;
+                output_ts_64_reg[i] <= 64'd0;
+                output_ts_step_reg[i] <= 1'b0;
+                output_pps_reg[i] <= 1'b0;
+            end
+        end
+    end
+
+end else begin
+
+    assign output_ts_96[95:48] = ts_96_s_reg;
+    assign output_ts_96[47:46] = 2'b00;
+    assign output_ts_96[45:16] = ts_96_ns_reg;
+    assign output_ts_96[15:0]  = {ts_96_fns_reg, 16'd0} >> FNS_WIDTH;
+    assign output_ts_64[63:16] = ts_64_ns_reg;
+    assign output_ts_64[15:0]  = {ts_64_fns_reg, 16'd0} >> FNS_WIDTH;
+    assign output_ts_step = ts_step_reg;
+
+    assign output_pps = pps_reg;
+
+end
+
+endgenerate
 
 always @(posedge clk) begin
     ts_step_reg <= 0;
@@ -184,36 +254,40 @@ always @(posedge clk) begin
     end
 
     // 96 bit timestamp
-    if (input_ts_96_valid) begin
-        // load timestamp
-        {ts_96_ns_inc_reg, ts_96_fns_inc_reg} <= (FNS_WIDTH > 16 ? input_ts_96[45:0] << (FNS_WIDTH-16) : input_ts_96[45:0] >> (16-FNS_WIDTH)) + {ts_inc_ns_reg, ts_inc_fns_reg};
-        {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} <= (FNS_WIDTH > 16 ? input_ts_96[45:0] << (FNS_WIDTH-16) : input_ts_96[45:0] >> (16-FNS_WIDTH)) + {ts_inc_ns_reg, ts_inc_fns_reg} - {31'd1_000_000_000, {FNS_WIDTH{1'b0}}};
-        ts_96_s_reg <= input_ts_96[95:48];
-        ts_96_ns_reg <= input_ts_96[45:16];
-        ts_96_fns_reg <= FNS_WIDTH > 16 ? input_ts_96[15:0] << (FNS_WIDTH-16) : input_ts_96[15:0] >> (16-FNS_WIDTH);
-        ts_step_reg <= 1;
-    end else if (!ts_96_ns_ovf_reg[30]) begin
+    {ts_inc_ns_delay_reg, ts_inc_fns_delay_reg} <= {ts_inc_ns_reg, ts_inc_fns_reg};
+    {ts_inc_ns_ovf_reg, ts_inc_fns_ovf_reg} <= {NS_PER_S, {FNS_WIDTH{1'b0}}} - {ts_inc_ns_reg, ts_inc_fns_reg};
+
+    {ts_96_ns_inc_reg, ts_96_fns_inc_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg} + {ts_inc_ns_delay_reg, ts_inc_fns_delay_reg};
+    {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg} - {ts_inc_ns_ovf_reg, ts_inc_fns_ovf_reg};
+    {ts_96_ns_reg, ts_96_fns_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg};
+
+    if (!ts_96_ns_ovf_reg[30]) begin
         // if the overflow lookahead did not borrow, one second has elapsed
-        // increment seconds field, pre-compute both normal increment and overflow values
-        {ts_96_ns_inc_reg, ts_96_fns_inc_reg} <= {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} + {ts_inc_ns_reg, ts_inc_fns_reg};
-        {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} <= {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} + {ts_inc_ns_reg, ts_inc_fns_reg} - {31'd1_000_000_000, {FNS_WIDTH{1'b0}}};
+        // increment seconds field, pre-compute normal increment, force overflow lookahead borrow bit set
+        {ts_96_ns_inc_reg, ts_96_fns_inc_reg} <= {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} + {ts_inc_ns_delay_reg, ts_inc_fns_delay_reg};
+        ts_96_ns_ovf_reg[30] <= 1'b1;
         {ts_96_ns_reg, ts_96_fns_reg} <= {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg};
         ts_96_s_reg <= ts_96_s_reg + 1;
-    end else begin
-        // no increment seconds field, pre-compute both normal increment and overflow values
-        {ts_96_ns_inc_reg, ts_96_fns_inc_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg} + {ts_inc_ns_reg, ts_inc_fns_reg};
-        {ts_96_ns_ovf_reg, ts_96_fns_ovf_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg} + {ts_inc_ns_reg, ts_inc_fns_reg} - {31'd1_000_000_000, {FNS_WIDTH{1'b0}}};
-        {ts_96_ns_reg, ts_96_fns_reg} <= {ts_96_ns_inc_reg, ts_96_fns_inc_reg};
-        ts_96_s_reg <= ts_96_s_reg;
+    end
+
+    if (input_ts_96_valid) begin
+        // load timestamp
+        ts_96_s_reg <= input_ts_96[95:48];
+        ts_96_ns_reg <= input_ts_96[45:16];
+        ts_96_ns_inc_reg <= input_ts_96[45:16];
+        ts_96_ns_ovf_reg[30] <= 1'b1;
+        ts_96_fns_reg <= FNS_WIDTH > 16 ? input_ts_96[15:0] << (FNS_WIDTH-16) : input_ts_96[15:0] >> (16-FNS_WIDTH);
+        ts_96_fns_inc_reg <= FNS_WIDTH > 16 ? input_ts_96[15:0] << (FNS_WIDTH-16) : input_ts_96[15:0] >> (16-FNS_WIDTH);
+        ts_step_reg <= 1;
     end
 
     // 64 bit timestamp
+    {ts_64_ns_reg, ts_64_fns_reg} <= {ts_64_ns_reg, ts_64_fns_reg} + {ts_inc_ns_reg, ts_inc_fns_reg};
+
     if (input_ts_64_valid) begin
         // load timestamp
         {ts_64_ns_reg, ts_64_fns_reg} <= input_ts_64;
         ts_step_reg <= 1;
-    end else begin
-        {ts_64_ns_reg, ts_64_fns_reg} <= {ts_64_ns_reg, ts_64_fns_reg} + {ts_inc_ns_reg, ts_inc_fns_reg};
     end
 
     pps_reg <= !ts_96_ns_ovf_reg[30];
@@ -230,13 +304,16 @@ always @(posedge clk) begin
         drift_rate_reg <= DRIFT_RATE;
         ts_inc_ns_reg <= 0;
         ts_inc_fns_reg <= 0;
+        ts_inc_ns_delay_reg <= 0;
+        ts_inc_fns_delay_reg <= 0;
+        ts_inc_ns_ovf_reg <= 0;
+        ts_inc_fns_ovf_reg <= 0;
         ts_96_s_reg <= 0;
         ts_96_ns_reg <= 0;
         ts_96_fns_reg <= 0;
         ts_96_ns_inc_reg <= 0;
         ts_96_fns_inc_reg <= 0;
-        ts_96_ns_ovf_reg <= 31'h7fffffff;
-        ts_96_fns_ovf_reg <= {FNS_WIDTH{1'b1}};
+        ts_96_ns_ovf_reg[30] <= 1'b1;
         ts_64_ns_reg <= 0;
         ts_64_fns_reg <= 0;
         ts_step_reg <= 0;

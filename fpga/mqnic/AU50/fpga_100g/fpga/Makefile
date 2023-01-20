@@ -145,7 +145,9 @@ XDC_FILES += ../../../common/syn/vivado/cmac_gty_wrapper.tcl
 XDC_FILES += ../../../common/syn/vivado/cmac_gty_ch_wrapper.tcl
 #XDC_FILES += hbm.xdc
 
+# Where we add ILAs using "Setup Debug..."
 XDC_FILES += app/template/debug.xdc
+TARGET_CONSTRAINTS_FILE = app/template/debug.xdc
 
 # IP
 IP_TCL_FILES = ip/pcie4c_uscale_plus_0.tcl

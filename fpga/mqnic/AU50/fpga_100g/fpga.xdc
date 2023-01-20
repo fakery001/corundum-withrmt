@@ -215,6 +215,16 @@ set_false_path -from [get_ports {pcie_reset_n}]
 set_input_delay 0 [get_ports {pcie_reset_n}]
 
 # UART
-set_false_path -to [get_ports {usb_uart0_txd}]
-set_output_delay 0 [get_ports {usb_uart0_txd}]
-set_false_path -from [get_ports {usb_uart0_rxd}]
+
+# 13-01-2023 Zulip Corundum
+# Is this a CDC path by any chance?
+# Eventually it is (it might go through one or two flops before the actual CDC).
+# I'm thinking that maybe that particular signal should be revisited as I think
+# currently it's a max delay, but maybe it should be a full false path as it changes
+# rather rarely.
+set_false_path -from [get_pins qsfp_cmac_inst/cmac_inst/inst/i_cmac_usplus_top/obsibdaaf4ker2wujpra0sjb/RX_CLK] -to [get_pins {core_inst/core_inst/core_pcie_inst/core_inst/iface[0].interface_inst/port[0].port_inst/rx_status_sync_1_reg_reg/D}]
+set_false_path -from [get_pins pcie4c_uscale_plus_inst/inst/pcie4c_uscale_plus_0_gt_top_i/diablo_gt.diablo_gt_phy_wrapper/phy_clk_i/bufg_gt_userclk/O] -to [get_pins core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/facet_inst/axi_timerCtrl/io_external_buffercc/buffers_0_tick_reg/D]
+
+# XVC PCIe VSEC samples on PCIe clock, but should sample on TCK, which is divided 8:1 from the PCIe clock
+# As the IP is encrypted, we have to solve it through a multicycle constraint, 4 clocks as TCK is used on both edges.
+set_multicycle_path -from [get_pins core_inst/core_inst/core_pcie_inst/core_inst/app.app_block_inst/facet_inst/jtagBridge_1/jtag_tap_tdoUnbufferd_regNext_reg/C] -to [get_pins {xvc_vsec_i/xvc_vsec_i/pcie_jtag/inst/pcie_jtag/inst/ext_cfg_inst/jtag_serializer_inst/tdo_buffer_reg[5][0]/D}] 4

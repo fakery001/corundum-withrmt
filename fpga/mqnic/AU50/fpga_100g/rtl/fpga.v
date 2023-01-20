@@ -764,14 +764,21 @@ pcie_user_reset_bufg_inst (
     .O(pcie_user_reset)
 );
 
-
+    (* mark_debug = "true", keep = "true" *) 
     wire         cfg_ext_read_received;
+    (* mark_debug = "true", keep = "true" *) 
     wire         cfg_ext_write_received;
+    (* mark_debug = "true", keep = "true" *) 
     wire   [9:0] cfg_ext_register_number;
+    (* mark_debug = "true", keep = "true" *) 
     wire   [7:0] cfg_ext_function_number;
+    (* mark_debug = "true", keep = "true" *) 
     wire  [31:0] cfg_ext_write_data;
+    (* mark_debug = "true", keep = "true" *) 
     wire   [3:0] cfg_ext_write_byte_enable;
+    (* mark_debug = "true", keep = "true" *) 
     wire  [31:0] cfg_ext_read_data;
+    (* mark_debug = "true", keep = "true" *) 
     wire         cfg_ext_read_data_valid;
     
     
@@ -943,6 +950,7 @@ pcie4c_uscale_plus_inst (
     .cfg_ext_read_data_valid                        ( cfg_ext_read_data_valid )
 );
 
+(* mark_debug = "true", keep = "true" *) 
 wire pcie_xvc_tck, pcie_xvc_tms, pcie_xvc_tdi, pcie_xvc_tdo;
 
 xvc_vsec_wrapper xvc_vsec_i (

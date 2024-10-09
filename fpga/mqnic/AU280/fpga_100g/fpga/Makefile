@@ -110,6 +110,23 @@ SYN_FILES += lib/pcie/rtl/pcie_us_if_cc.v
 SYN_FILES += lib/pcie/rtl/pcie_us_if_cq.v
 SYN_FILES += lib/pcie/rtl/pcie_us_cfg.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
+# Application
+SYN_FILES += app/template/rtl/mqnic_app_block.v
+SYN_FILES += lib/axi/rtl/axil_ram.v
+
+# Finka SoC with VexRiscv RISC-V core
+SYN_FILES += app/template/rtl/Facet.v
+# Facet AXI4 master connects to AXI4 RAM slave
+SYN_FILES += lib/axi/rtl/axi_ram.v
+
+# (input.*)(io_axi4.*[^,]),
+# .$2(0), // $1
+
+# Memory initialization files
+MEM_FILES  = app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol0.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol1.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol2.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol3.bin
 
 # XDC files
 XDC_FILES = fpga.xdc
@@ -127,11 +144,15 @@ XDC_FILES += ../../../common/syn/vivado/cmac_gty_wrapper.tcl
 XDC_FILES += ../../../common/syn/vivado/cmac_gty_ch_wrapper.tcl
 #XDC_FILES += hbm.xdc
 
+# Where we add ILAs using "Setup Debug..."
+XDC_FILES += app/template/debug.xdc
+TARGET_CONSTRAINTS_FILE = app/template/debug.xdc
 # IP
 IP_TCL_FILES = ip/pcie4c_uscale_plus_0.tcl
 IP_TCL_FILES += ip/cmac_usplus.tcl
 IP_TCL_FILES += ip/cmac_gty.tcl
 IP_TCL_FILES += ip/cms.tcl
+IP_TCL_FILES += ip/pcie_xvc_jtag.tcl
 #IP_TCL_FILES += ip/hbm_0.tcl
 #IP_TCL_FILES += ip/ddr4_0.tcl
 

@@ -3,7 +3,7 @@ PROJ_NAME=hello_world
 # The host system with the PCIe endpoint running Corundum
 # with the PCIe Ext Cap XVC to JTAG enabled. That host system
 # should be running the VexRiscv-specific OpenOCD GDB server.
-REMOTE=192.168.1.50:3333
+REMOTE=192.168.1.1:3333
 
 DEBUG=yes
 BENCH=no
@@ -26,7 +26,7 @@ SIFIVE_GCC_PACK ?= yes
 
 ifeq ($(SIFIVE_GCC_PACK),yes)
 	RISCV_NAME ?= riscv64-unknown-elf
-	RISCV_PATH ?= ./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/
+	RISCV_PATH ?= ./local/riscv/
 #/opt/riscv/
 else
 	RISCV_NAME ?= riscv32-unknown-elf
@@ -46,7 +46,7 @@ ifeq ($(COMPRESSED),yes)
 	MARCH := $(MARCH)ac
 endif
 
-CFLAGS += -march=$(MARCH)  -mabi=$(MABI) -DNDEBUG
+CFLAGS += -march=$(MARCH)_zicsr  -mabi=$(MABI) -DNDEBUG
 LDFLAGS += -march=$(MARCH)  -mabi=$(MABI)
 
 
@@ -176,9 +176,9 @@ upload-debug-build: $(OBJDIR)/$(PROJ_NAME).elf
 	build/$(PROJ_NAME).elf
 
 .PHONY: toolchain
-toolchain: ./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/bin/riscv64-unknown-elf-gcc
+toolchain: ./local/riscv/bin/riscv64-unknown-elf-gcc
 
-./local/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6/bin/riscv64-unknown-elf-gcc:
+./local/riscv/bin/riscv64-unknown-elf-gcc:
 	mkdir -p local
 	curl --output - https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-20171231-x86_64-linux-centos6.tar.gz | tar xz -C ./local
 

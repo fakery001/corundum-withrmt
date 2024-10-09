@@ -1,6 +1,6 @@
 # Fork Note
 
-This fork adds an SoC with VexRiscv RISC-V CPU in the app block, but for AU50/fpga_100g/fpga only.
+This fork adds an SoC with VexRiscv RISC-V CPU and RMT in the app block, but for AU280/fpga_100g/fpga .
 See fpga/app/template/README for further details.
 
 # Corundum Readme

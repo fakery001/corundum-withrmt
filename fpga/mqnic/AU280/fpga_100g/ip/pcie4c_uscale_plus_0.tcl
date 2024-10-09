@@ -30,4 +30,6 @@ set_property -dict [list \
     CONFIG.MSI_X_OPTIONS {MSI-X_External} \
     CONFIG.vendor_id {1234} \
     CONFIG.mode_selection {Advanced} \
+    CONFIG.ext_pcie_cfg_space_enabled {true} \
+    CONFIG.ext_xvc_vsec_enable {true} \
 ] [get_ips pcie4c_uscale_plus_0]

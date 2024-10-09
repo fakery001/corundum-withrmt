@@ -188,6 +188,8 @@ module fpga #
     input  wire [3:0]   msp_gpio,
     output wire         msp_uart_txd,
     input  wire         msp_uart_rxd,
+    output wire         usb_uart_txd,
+    input  wire         usb_uart_rxd,
 
     /*
      * PCI express
@@ -826,6 +828,22 @@ pcie_user_reset_bufg_inst (
     .I(pcie_user_reset_reg_2),
     .O(pcie_user_reset)
 );
+    (* mark_debug = "true", keep = "true" *) 
+    wire         cfg_ext_read_received;
+    (* mark_debug = "true", keep = "true" *) 
+    wire         cfg_ext_write_received;
+    (* mark_debug = "true", keep = "true" *) 
+    wire   [9:0] cfg_ext_register_number;
+    (* mark_debug = "true", keep = "true" *) 
+    wire   [7:0] cfg_ext_function_number;
+    (* mark_debug = "true", keep = "true" *) 
+    wire  [31:0] cfg_ext_write_data;
+    (* mark_debug = "true", keep = "true" *) 
+    wire   [3:0] cfg_ext_write_byte_enable;
+    (* mark_debug = "true", keep = "true" *) 
+    wire  [31:0] cfg_ext_read_data;
+    (* mark_debug = "true", keep = "true" *) 
+    wire         cfg_ext_read_data_valid;
 
 pcie4c_uscale_plus_0
 pcie4c_uscale_plus_inst (
@@ -983,8 +1001,35 @@ pcie4c_uscale_plus_inst (
     .sys_clk_gt(pcie_sys_clk_gt),
     .sys_reset(pcie_reset_n),
 
-    .phy_rdy_out()
+    .phy_rdy_out(),
+
+    .cfg_ext_read_received                          ( cfg_ext_read_received ),
+    .cfg_ext_write_received                         ( cfg_ext_write_received ),
+    .cfg_ext_register_number                        ( cfg_ext_register_number ),
+    .cfg_ext_function_number                        ( cfg_ext_function_number ),
+    .cfg_ext_write_data                             ( cfg_ext_write_data ),
+    .cfg_ext_write_byte_enable                      ( cfg_ext_write_byte_enable ),
+    .cfg_ext_read_data                              ( cfg_ext_read_data ),
+    .cfg_ext_read_data_valid                        ( cfg_ext_read_data_valid )
 );
+(* mark_debug = "true", keep = "true" *) 
+wire pcie_xvc_tck, pcie_xvc_tms, pcie_xvc_tdi, pcie_xvc_tdo;
+
+xvc_vsec_wrapper xvc_vsec_i (
+    .clk(pcie_user_clk),
+    // PCIe Extended Capability Interface signals
+    .pcie3_cfg_ext_function_number(cfg_ext_function_number),
+    .pcie3_cfg_ext_register_number(cfg_ext_register_number),
+    .pcie3_cfg_ext_read_received(cfg_ext_read_received),
+    .pcie3_cfg_ext_read_data_valid(cfg_ext_read_data_valid),
+    .pcie3_cfg_ext_read_data(cfg_ext_read_data),
+    .pcie3_cfg_ext_write_received(cfg_ext_write_received),
+    .pcie3_cfg_ext_write_data(cfg_ext_write_data),
+    .pcie3_cfg_ext_write_byte_enable(cfg_ext_write_byte_enable),
+    .tap_tck(pcie_xvc_tck),
+    .tap_tdi(pcie_xvc_tdi),
+    .tap_tdo(pcie_xvc_tdo),
+    .tap_tms(pcie_xvc_tms));
 
 reg [RQ_SEQ_NUM_WIDTH-1:0] pcie_rq_seq_num0_reg;
 reg                        pcie_rq_seq_num_vld0_reg;
@@ -2961,6 +3006,12 @@ assign hbm_status = 0;
 end
 
 endgenerate
+// GPIO for app
+wire [31:0]  gpio_in;
+wire [31:0] gpio_out;
+
+assign gpio_in[0] = usb_uart_rxd;
+assign usb_uart_txd = gpio_out[0];
 
 fpga_core #(
     // FW and board IDs
@@ -3404,7 +3455,18 @@ core_inst (
     .m_axil_cms_rdata(axil_cms_rdata),
     .m_axil_cms_rresp(axil_cms_rresp),
     .m_axil_cms_rvalid(axil_cms_rvalid),
-    .m_axil_cms_rready(axil_cms_rready)
+    .m_axil_cms_rready(axil_cms_rready),
+
+    /*
+     * JTAG debug for RISC-V from PCIe Ext Cap XVC
+     */
+    .jtag_tck(pcie_xvc_tck),
+    .jtag_tms(pcie_xvc_tms),
+    .jtag_tdi(pcie_xvc_tdi),
+    .jtag_tdo(pcie_xvc_tdo),
+
+    .gpio_out(gpio_out),
+    .gpio_in(gpio_in)
 );
 
 endmodule

@@ -87,7 +87,12 @@ create_project.tcl: Makefile $(XCI_FILES_REL) $(IP_TCL_FILES_REL)
 	rm -rf defines.v
 	touch defines.v
 	for x in $(DEFS); do echo '`define' $$x >> defines.v; done
-	echo "create_project -force -part $(FPGA_PART) $(PROJECT)" > $@
+	echo "set public_repo_dir \$\::env(LIB_RMT_PATH)/netfpga_fifo/" > $@
+	echo "set_property ip_repo_paths ${public_repo_dir} [current_fileset]" >> $@
+	echo "update_ip_catalog" >> $@
+	echo "create_project -force -part $(FPGA_PART) $(PROJECT)" >> $@
+	echo "read_vhdl -library cam  ../lib_rmt/xilinx_cam/dmem.vhd" >> $@
+	echo "read_vhdl -library cam  [glob ../lib_rmt/xilinx_cam/cam*.vhd]" >> $@
 	echo "add_files -fileset sources_1 defines.v $(SYN_FILES_REL)" >> $@
 	echo "set_property top $(FPGA_TOP) [current_fileset]" >> $@
 	echo "add_files -fileset constrs_1 $(XDC_FILES_REL)" >> $@

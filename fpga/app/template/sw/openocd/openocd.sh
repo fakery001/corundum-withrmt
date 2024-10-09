@@ -14,7 +14,7 @@ fi
 echo Corundum PCIe endpoint found at $PCI_NODE, assuming Xilinx XVC/PCIe capability.
 
 # This must be the VexRiscv fork of OpenOCD if targetting the VexRiscv based SoCs (Saxon, Murax, Briey, ...)
-sudo /home/leon/opt/bin/openocd -c "set CPU0_YAML ./cpu0.yaml" \
+sudo $(PWD)/local/bin/openocd -c "set CPU0_YAML ./cpu0.yaml" \
   -c "set TAP_NAME xcu.tap" \
   -c "set PCI_NODE $PCI_NODE" \
   -f ./xvc-openocd.cfg \

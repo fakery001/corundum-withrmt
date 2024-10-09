@@ -95,7 +95,9 @@ module mqnic_interface_tx #
     parameter AXIS_KEEP_WIDTH = AXIS_DATA_WIDTH/8,
     parameter AXIS_TX_ID_WIDTH = TX_QUEUE_INDEX_WIDTH,
     parameter AXIS_TX_DEST_WIDTH = $clog2(PORTS)+4,
-    parameter AXIS_TX_USER_WIDTH = TX_TAG_WIDTH + 1
+    parameter AXIS_TX_USER_WIDTH = TX_TAG_WIDTH + 1,
+    // Enable RMT pipeline on TX
+    parameter RMT_TX_ENABLE = 1
 )
 (
     input  wire                                         clk,
@@ -496,6 +498,15 @@ wire [AXIS_TX_ID_WIDTH-1:0]    tx_axis_tid_int;
 wire [AXIS_TX_DEST_WIDTH-1:0]  tx_axis_tdest_int;
 wire [AXIS_TX_USER_WIDTH-1:0]  tx_axis_tuser_int;
 
+
+// rmt
+wire [AXIS_DATA_WIDTH-1:0] tx_axis_tdata_int_2;
+wire [AXIS_KEEP_WIDTH-1:0] tx_axis_tkeep_int_2;
+wire                       tx_axis_tvalid_int_2;
+wire                       tx_axis_tready_int_2;
+wire                       tx_axis_tlast_int_2;
+wire                       tx_axis_tuser_int_2;
+
 dma_client_axis_source #(
     .RAM_ADDR_WIDTH(RAM_ADDR_WIDTH),
     .SEG_COUNT(RAM_SEG_COUNT),
@@ -594,14 +605,14 @@ egress_inst (
     /*
      * Transmit data output
      */
-    .m_axis_tdata(m_axis_tx_tdata),
-    .m_axis_tkeep(m_axis_tx_tkeep),
-    .m_axis_tvalid(m_axis_tx_tvalid),
-    .m_axis_tready(m_axis_tx_tready),
-    .m_axis_tlast(m_axis_tx_tlast),
+    .m_axis_tdata(tx_axis_tdata_int_2),
+    .m_axis_tkeep(tx_axis_tkeep_int_2),
+    .m_axis_tvalid(tx_axis_tvalid_int_2),
+    .m_axis_tready(tx_axis_tready_int_2),
+    .m_axis_tlast(tx_axis_tlast_int_2),
     .m_axis_tid(m_axis_tx_tid),
     .m_axis_tdest(m_axis_tx_tdest),
-    .m_axis_tuser(m_axis_tx_tuser),
+    .m_axis_tuser(tx_axis_tuser_int_2),
 
     /*
      * Transmit checksum command
@@ -612,6 +623,47 @@ egress_inst (
     .tx_csum_cmd_valid(tx_csum_cmd_valid),
     .tx_csum_cmd_ready(tx_csum_cmd_ready)
 );
+//added RMT plugins for tx path.
+
+if (RMT_TX_ENABLE) begin
+
+    rmt_wrapper
+    rmt_wrapper_tx
+    (
+    	.clk(clk),		// axis clk
+    	.aresetn(~rst),	
+        .vlan_drop_flags(32'b0),
+        .ctrl_token(),
+
+    	// input Slave AXI Stream
+    	.s_axis_tdata(tx_axis_tdata_int_2),
+    	.s_axis_tkeep(tx_axis_tkeep_int_2),
+    	.s_axis_tuser(tx_axis_tuser_int_2),
+    	.s_axis_tvalid(tx_axis_tvalid_int_2),
+    	.s_axis_tready(tx_axis_tready_int_2),
+    	.s_axis_tlast(tx_axis_tlast_int_2),
+
+    	// output Master AXI Stream
+    	.m_axis_tdata(m_axis_tx_tdata),
+    	.m_axis_tkeep(m_axis_tx_tkeep),
+    	.m_axis_tuser(0),
+    	.m_axis_tvalid(m_axis_tx_tvalid),
+    	.m_axis_tready(m_axis_tx_tready),
+    	.m_axis_tlast(m_axis_tx_tlast)
+    );
+
+
+end 
+
+else begin
+
+    assign m_axis_tx_tdata = tx_axis_tdata_int_2;
+    assign m_axis_tx_tkeep = tx_axis_tkeep_int_2;
+    assign m_axis_tx_tvalid = tx_axis_tvalid_int_2;
+    assign tx_axis_tready_int_2 = m_axis_tx_tready;
+    assign m_axis_tx_tlast = tx_axis_tlast_int_2;
+    assign m_axis_tx_tuser = tx_axis_tuser_int_2;
+end
 
 endmodule
 

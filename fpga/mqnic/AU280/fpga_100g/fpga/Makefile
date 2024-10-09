@@ -110,6 +110,49 @@ SYN_FILES += lib/pcie/rtl/pcie_us_if_cc.v
 SYN_FILES += lib/pcie/rtl/pcie_us_if_cq.v
 SYN_FILES += lib/pcie/rtl/pcie_us_cfg.v
 SYN_FILES += lib/pcie/rtl/pulse_merge.v
+# Application
+SYN_FILES += app/template/rtl/mqnic_app_block.v
+SYN_FILES += lib/axi/rtl/axil_ram.v
+
+# Finka SoC with VexRiscv RISC-V core
+SYN_FILES += app/template/rtl/Facet.v
+# Facet AXI4 master connects to AXI4 RAM slave
+SYN_FILES += lib/axi/rtl/axi_ram.v
+
+# RMT-related 
+SYN_FILES += lib_rmt/rmtv2/rmt_wrapper.v
+SYN_FILES += lib_rmt/rmtv2/pkt_filter.v
+SYN_FILES += lib_rmt/rmtv2/cookie.v
+SYN_FILES += lib_rmt/rmtv2/parser_top.v
+SYN_FILES += lib_rmt/rmtv2/parser_do_parsing_top.v
+SYN_FILES += lib_rmt/rmtv2/parser_do_parsing.v
+SYN_FILES += lib_rmt/rmtv2/parser_wait_segs.v
+SYN_FILES += lib_rmt/rmtv2/sub_parser.v
+SYN_FILES += lib_rmt/rmtv2/deparser_top.v
+SYN_FILES += lib_rmt/rmtv2/depar_wait_segs.v
+SYN_FILES += lib_rmt/rmtv2/depar_do_deparsing.v
+SYN_FILES += lib_rmt/rmtv2/sub_deparser.v
+SYN_FILES += lib_rmt/rmtv2/stage.v
+SYN_FILES += lib_rmt/rmtv2/last_stage.v
+SYN_FILES += lib_rmt/rmtv2/output_arbiter.v
+SYN_FILES += lib_rmt/rmtv2/action/action_engine.v
+SYN_FILES += lib_rmt/rmtv2/action/alu_1.v
+SYN_FILES += lib_rmt/rmtv2/action/alu_2.v
+SYN_FILES += lib_rmt/rmtv2/action/alu_3.v
+ SYN_FILES += lib_rmt/rmtv2/action/crossbar.v
+SYN_FILES += lib_rmt/rmtv2/extract/key_extract.v
+SYN_FILES += lib_rmt/rmtv2/extract/key_extract_top.v
+SYN_FILES += lib_rmt/rmtv2/lookup/lookup_engine_top.v
+SYN_FILES += lib_rmt/rmtv2/lookup/lke_cam_part.v
+SYN_FILES += lib_rmt/rmtv2/lookup/lke_ram_part.v
+# (input.*)(io_axi4.*[^,]),
+# .$2(0), // $1
+
+# Memory initialization files
+MEM_FILES  = app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol0.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol1.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol2.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol3.bin
 
 # XDC files
 XDC_FILES = fpga.xdc
@@ -127,11 +170,25 @@ XDC_FILES += ../../../common/syn/vivado/cmac_gty_wrapper.tcl
 XDC_FILES += ../../../common/syn/vivado/cmac_gty_ch_wrapper.tcl
 #XDC_FILES += hbm.xdc
 
+# Where we add ILAs using "Setup Debug..."
+XDC_FILES += app/template/debug.xdc
+TARGET_CONSTRAINTS_FILE = app/template/debug.xdc
 # IP
 IP_TCL_FILES = ip/pcie4c_uscale_plus_0.tcl
 IP_TCL_FILES += ip/cmac_usplus.tcl
 IP_TCL_FILES += ip/cmac_gty.tcl
 IP_TCL_FILES += ip/cms.tcl
+IP_TCL_FILES += ip/pcie_xvc_jtag.tcl
+# IPs for RMT pipeline
+IP_TCL_FILES += ip/rmt/blk_mem_gen_0.tcl
+IP_TCL_FILES += ip/rmt/blk_mem_gen_1.tcl
+IP_TCL_FILES += ip/rmt/blk_mem_gen_2.tcl
+IP_TCL_FILES += ip/rmt/blk_mem_gen_3.tcl
+IP_TCL_FILES += ip/rmt/fifo_generator_512b.tcl
+IP_TCL_FILES += ip/rmt/fifo_generator_705b.tcl
+IP_TCL_FILES += ip/rmt/parse_act_ram_ip.tcl
+IP_TCL_FILES += ip/rmt/page_tbl_16w_32d.tcl
+IP_TCL_FILES += ip/rmt/fifo.tcl
 #IP_TCL_FILES += ip/hbm_0.tcl
 #IP_TCL_FILES += ip/ddr4_0.tcl
 

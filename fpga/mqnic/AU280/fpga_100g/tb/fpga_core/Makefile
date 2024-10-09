@@ -134,6 +134,42 @@ VERILOG_SOURCES += ../../lib/pcie/rtl/pcie_us_if_cq.v
 VERILOG_SOURCES += ../../lib/pcie/rtl/pcie_us_cfg.v
 VERILOG_SOURCES += ../../lib/pcie/rtl/pulse_merge.v
 
+
+# RMT-related 
+VERILOG_SOURCES += lib_rmt/rmtv2/rmt_wrapper.v
+VERILOG_SOURCES += lib_rmt/rmtv2/pkt_filter.v
+VERILOG_SOURCES += lib_rmt/rmtv2/cookie.v
+VERILOG_SOURCES += lib_rmt/rmtv2/parser_top.v
+VERILOG_SOURCES += lib_rmt/rmtv2/parser_do_parsing_top.v
+VERILOG_SOURCES += lib_rmt/rmtv2/parser_do_parsing.v
+VERILOG_SOURCES += lib_rmt/rmtv2/parser_wait_segs.v
+VERILOG_SOURCES += lib_rmt/rmtv2/sub_parser.v
+VERILOG_SOURCES += lib_rmt/rmtv2/deparser_top.v
+VERILOG_SOURCES += lib_rmt/rmtv2/depar_wait_segs.v
+VERILOG_SOURCES += lib_rmt/rmtv2/depar_do_deparsing.v
+VERILOG_SOURCES += lib_rmt/rmtv2/sub_deparser.v
+VERILOG_SOURCES += lib_rmt/rmtv2/stage.v
+VERILOG_SOURCES += lib_rmt/rmtv2/last_stage.v
+VERILOG_SOURCES += lib_rmt/rmtv2/output_arbiter.v
+VERILOG_SOURCES += lib_rmt/rmtv2/action/action_engine.v
+VERILOG_SOURCES += lib_rmt/rmtv2/action/alu_1.v
+VERILOG_SOURCES += lib_rmt/rmtv2/action/alu_2.v
+VERILOG_SOURCES += lib_rmt/rmtv2/action/alu_3.v
+ VERILOG_SOURCES += lib_rmt/rmtv2/action/crossbar.v
+VERILOG_SOURCES += lib_rmt/rmtv2/extract/key_extract.v
+VERILOG_SOURCES += lib_rmt/rmtv2/extract/key_extract_top.v
+VERILOG_SOURCES += lib_rmt/rmtv2/lookup/lookup_engine_top.v
+VERILOG_SOURCES += lib_rmt/rmtv2/lookup/lke_cam_part.v
+VERILOG_SOURCES += lib_rmt/rmtv2/lookup/lke_ram_part.v
+# (input.*)(io_axi4.*[^,]),
+# .$2(0), // $1
+
+# Memory initialization files
+MEM_FILES  = app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol0.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol1.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol2.bin
+MEM_FILES += app/template/rtl/Facet.v_toplevel_axi_ram_ram_symbol3.bin
+
 # module parameters
 
 # Structural configuration

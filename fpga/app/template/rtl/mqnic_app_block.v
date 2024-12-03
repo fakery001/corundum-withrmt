@@ -404,29 +404,45 @@ module mqnic_app_block #
     input  wire [PORT_COUNT-1:0]                          direct_rx_clk,
     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          direct_rx_rst,
-
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_DATA_WIDTH-1:0]          s_axis_direct_rx_tdata,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_KEEP_WIDTH-1:0]          s_axis_direct_rx_tkeep,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_direct_rx_tvalid,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          s_axis_direct_rx_tready,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_direct_rx_tlast,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_RX_USER_WIDTH-1:0]       s_axis_direct_rx_tuser,
-
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_DATA_WIDTH-1:0]          m_axis_direct_rx_tdata,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_KEEP_WIDTH-1:0]          m_axis_direct_rx_tkeep,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          m_axis_direct_rx_tvalid,
+    (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          m_axis_direct_rx_tready,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          m_axis_direct_rx_tlast,
+    (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_RX_USER_WIDTH-1:0]       m_axis_direct_rx_tuser,
 
     /*
      * Ethernet (synchronous MAC interface - low latency raw traffic)
      */
+      (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_DATA_WIDTH-1:0]     s_axis_sync_tx_tdata,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_KEEP_WIDTH-1:0]     s_axis_sync_tx_tkeep,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_sync_tx_tvalid,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          s_axis_sync_tx_tready,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_sync_tx_tlast,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_TX_USER_WIDTH-1:0]  s_axis_sync_tx_tuser,
 
     output wire [PORT_COUNT*AXIS_SYNC_DATA_WIDTH-1:0]     m_axis_sync_tx_tdata,
@@ -445,19 +461,29 @@ module mqnic_app_block #
     output wire [PORT_COUNT*TX_TAG_WIDTH-1:0]             m_axis_sync_tx_cpl_tag,
     output wire [PORT_COUNT-1:0]                          m_axis_sync_tx_cpl_valid,
     input  wire [PORT_COUNT-1:0]                          m_axis_sync_tx_cpl_ready,
-
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_DATA_WIDTH-1:0]     s_axis_sync_rx_tdata,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_KEEP_WIDTH-1:0]     s_axis_sync_rx_tkeep,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_sync_rx_tvalid,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          s_axis_sync_rx_tready,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          s_axis_sync_rx_tlast,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT*AXIS_SYNC_RX_USER_WIDTH-1:0]  s_axis_sync_rx_tuser,
-
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_SYNC_DATA_WIDTH-1:0]     m_axis_sync_rx_tdata,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_SYNC_KEEP_WIDTH-1:0]     m_axis_sync_rx_tkeep,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          m_axis_sync_rx_tvalid,
+     (* mark_debug = "true", keep = "true" *) 
     input  wire [PORT_COUNT-1:0]                          m_axis_sync_rx_tready,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT-1:0]                          m_axis_sync_rx_tlast,
+     (* mark_debug = "true", keep = "true" *) 
     output wire [PORT_COUNT*AXIS_SYNC_RX_USER_WIDTH-1:0]  m_axis_sync_rx_tuser,
 
     /*
@@ -767,9 +793,12 @@ assign s_axis_direct_rx_tready = m_axis_direct_rx_tready;
 assign m_axis_direct_rx_tlast = s_axis_direct_rx_tlast;
 assign m_axis_direct_rx_tuser = s_axis_direct_rx_tuser;
 
+
+
 /*
  * Ethernet (synchronous MAC interface - low latency raw traffic)
  */
+ // rmt trans
 assign m_axis_sync_tx_tdata = s_axis_sync_tx_tdata;
 assign m_axis_sync_tx_tkeep = s_axis_sync_tx_tkeep;
 assign m_axis_sync_tx_tvalid = s_axis_sync_tx_tvalid;
@@ -782,12 +811,56 @@ assign m_axis_sync_tx_cpl_tag = s_axis_sync_tx_cpl_tag;
 assign m_axis_sync_tx_cpl_valid = s_axis_sync_tx_cpl_valid;
 assign s_axis_sync_tx_cpl_ready = m_axis_sync_tx_cpl_ready;
 
-assign m_axis_sync_rx_tdata = s_axis_sync_rx_tdata;
-assign m_axis_sync_rx_tkeep = s_axis_sync_rx_tkeep;
-assign m_axis_sync_rx_tvalid = s_axis_sync_rx_tvalid;
-assign s_axis_sync_rx_tready = m_axis_sync_rx_tready;
-assign m_axis_sync_rx_tlast = s_axis_sync_rx_tlast;
-assign m_axis_sync_rx_tuser = s_axis_sync_rx_tuser;
+// todo: crossbar 区分riscv处理数据和 正常数据，riscv数据需要存到指定内存的指定地址
+// assign m_axis_sync_rx_tdata = s_axis_sync_rx_tdata;
+// assign m_axis_sync_rx_tkeep = s_axis_sync_rx_tkeep;
+// assign m_axis_sync_rx_tvalid = s_axis_sync_rx_tvalid;
+// assign s_axis_sync_rx_tready = m_axis_sync_rx_tready;
+// assign m_axis_sync_rx_tlast = s_axis_sync_rx_tlast;
+// assign m_axis_sync_rx_tuser = s_axis_sync_rx_tuser;
+//wire for riscv
+(* mark_debug = "true", keep = "true" *) wire [511:0] m_axis_riscv_sync_rx_tdata;
+(* mark_debug = "true", keep = "true" *) wire [127:0] m_axis_riscv_sync_rx_tkeep;
+(* mark_debug = "true", keep = "true" *) wire [127:0] m_axis_riscv_sync_rx_tuser;
+(* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tvalid;
+(* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tlast;
+(* mark_debug = "true", keep = "true" *) reg  m_axis_riscv_sync_rx_tready =1'b1;
+// test riscv crossbar
+riscv_parser #(
+	.C_S_AXIS_DATA_WIDTH(512),
+	.C_S_AXIS_TUSER_WIDTH(128)
+)riscv_parser_1
+(
+	.clk(clk),
+	.aresetn(~rst),
+
+
+	// input Slave AXI Stream
+	.s_axis_tdata(s_axis_sync_rx_tdata),
+	.s_axis_tkeep(s_axis_sync_rx_tkeep),
+	.s_axis_tuser(s_axis_sync_rx_tuser),
+	.s_axis_tvalid(s_axis_sync_rx_tvalid),
+	.s_axis_tready(s_axis_sync_rx_tready),
+	.s_axis_tlast(s_axis_sync_rx_tlast),
+
+
+	// output Master AXI Stream
+	.m_axis_tdata(m_axis_sync_rx_tdata),
+	.m_axis_tkeep(m_axis_sync_rx_tkeep),
+	.m_axis_tuser(m_axis_sync_rx_tuser),
+	.m_axis_tvalid(m_axis_sync_rx_tvalid),
+	// .m_axis_tready(s_axis_tready_f && s_axis_tready_p),
+	.m_axis_tready(m_axis_sync_rx_tready),
+	.m_axis_tlast(m_axis_sync_rx_tlast),
+
+	//control path
+	.c_m_axis_tdata(m_axis_riscv_sync_rx_tdata),
+	.c_m_axis_tkeep(m_axis_riscv_sync_rx_tkeep),
+	.c_m_axis_tuser(m_axis_riscv_sync_rx_tuser),
+	.c_m_axis_tvalid(m_axis_riscv_sync_rx_tvalid),
+    .c_m_axis_tready(m_axis_riscv_sync_rx_tready),
+	.c_m_axis_tlast(m_axis_riscv_sync_rx_tlast)
+);
 
 /*
  * Ethernet (internal at interface module)

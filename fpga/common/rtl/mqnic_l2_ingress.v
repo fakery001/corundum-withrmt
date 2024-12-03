@@ -77,13 +77,31 @@ module mqnic_l2_ingress #
 );
 
 // placeholder
-assign m_axis_tdata = s_axis_tdata;
-assign m_axis_tkeep = s_axis_tkeep;
-assign m_axis_tvalid = s_axis_tvalid;
-assign s_axis_tready = m_axis_tready;
-assign m_axis_tlast = s_axis_tlast;
-assign m_axis_tuser = s_axis_tuser;
 
+    rmt_wrapper
+    rmt_wrapper_tx
+    (
+    	.clk(clk),		// axis clk
+    	.aresetn(~rst),	
+        .vlan_drop_flags(32'b0),
+        .ctrl_token(),
+
+    	// input Slave AXI Stream
+    	.s_axis_tdata(s_axis_tdata),
+    	.s_axis_tkeep(s_axis_tkeep),
+    	.s_axis_tuser(s_axis_tuser),
+    	.s_axis_tvalid(s_axis_tvalid),
+    	.s_axis_tready(s_axis_tready),
+    	.s_axis_tlast(s_axis_tlast),
+
+    	// output Master AXI Stream
+    	.m_axis_tdata(m_axis_tdata),
+    	.m_axis_tkeep(m_axis_tkeep),
+    	.m_axis_tuser(0),
+    	.m_axis_tvalid(m_axis_tvalid),
+    	.m_axis_tready(m_axis_tready),
+    	.m_axis_tlast(m_axis_tlast)
+    );
 endmodule
 
 `resetall

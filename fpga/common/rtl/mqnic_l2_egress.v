@@ -74,13 +74,18 @@ module mqnic_l2_egress #
     output wire [AXIS_USER_WIDTH-1:0]  m_axis_tuser
 );
 
-// placeholder
+
+
+
 assign m_axis_tdata = s_axis_tdata;
 assign m_axis_tkeep = s_axis_tkeep;
 assign m_axis_tvalid = s_axis_tvalid;
 assign s_axis_tready = m_axis_tready;
 assign m_axis_tlast = s_axis_tlast;
 assign m_axis_tuser = s_axis_tuser;
+
+
+
 
 endmodule
 

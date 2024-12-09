@@ -173,7 +173,10 @@ module mqnic_app_block #
     // Statistics counter subsystem
     parameter STAT_ENABLE = 1,
     parameter STAT_INC_WIDTH = 24,
-    parameter STAT_ID_WIDTH = 12
+    parameter STAT_ID_WIDTH = 12,
+
+    // AXI4Stream sink: Data Width
+    parameter AXIS_SLAVE_DATA_WIDTH = 32
 )
 (
     (* mark_debug = "true", keep = "true" *) 
@@ -658,6 +661,35 @@ module mqnic_app_block #
     output wire                                           jtag_tdo,
     input  wire                                           jtag_tms,
     input  wire                                           jtag_tck
+
+    // AXIS slave port
+    // Ready to accept data in
+    ,   output wire  S_AXIS_TREADY
+    // Data in
+    ,   input wire [AXIS_SLAVE_DATA_WIDTH-1 : 0] S_AXIS_TDATA
+    // Byte qualifier
+    ,   input wire [(AXIS_SLAVE_DATA_WIDTH/8)-1 : 0] S_AXIS_TSTRB
+    // Indicates boundary of last packet
+    ,   input wire  S_AXIS_TLAST
+    // Data is in valid
+    ,   input wire  S_AXIS_TVALID
+    // Indicate the start of one frame
+    ,   input wire  S_AXIS_TUSER
+
+    // AXIS maxter port
+	// TREADY indicates that the slave can accept a transfer in the current cycle.
+    ,   input wire  M_AXIS_TREADY
+	// TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
+    ,   output wire [AXIS_SLAVE_DATA_WIDTH-1 : 0] M_AXIS_TDATA
+	// TSTRB is the byte qualifier that indicates whether the content of the associated byte of TDATA is processed as a data byte or a position byte.
+    ,   output wire [(AXIS_SLAVE_DATA_WIDTH/8)-1 : 0] M_AXIS_TSTRB
+	// TLAST indicates the boundary of a packet.
+    ,   output wire  M_AXIS_TLAST
+	// Master Stream Ports. TVALID indicates that the master is driving a valid transfer, A transfer takes place when both TVALID and TREADY are asserted.
+    ,   output wire  M_AXIS_TVALID
+    // Indicate the start of one frame
+    ,   output wire  M_AXIS_TUSER
+
 );
 
 // check configuration
@@ -824,7 +856,7 @@ assign s_axis_sync_tx_cpl_ready = m_axis_sync_tx_cpl_ready;
 (* mark_debug = "true", keep = "true" *) wire [127:0] m_axis_riscv_sync_rx_tuser;
 (* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tvalid;
 (* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tlast;
-(* mark_debug = "true", keep = "true" *) reg  m_axis_riscv_sync_rx_tready =1'b1;
+
 // test riscv crossbar
 riscv_parser #(
 	.C_S_AXIS_DATA_WIDTH(512),
@@ -858,7 +890,7 @@ riscv_parser #(
 	.c_m_axis_tkeep(m_axis_riscv_sync_rx_tkeep),
 	.c_m_axis_tuser(m_axis_riscv_sync_rx_tuser),
 	.c_m_axis_tvalid(m_axis_riscv_sync_rx_tvalid),
-    .c_m_axis_tready(m_axis_riscv_sync_rx_tready),
+    .c_m_axis_tready(1'b1),
 	.c_m_axis_tlast(m_axis_riscv_sync_rx_tlast)
 );
 
@@ -976,6 +1008,7 @@ wire  [1:0] ram_awid;
 wire  [7:0] ram_awlen;
 wire  [2:0] ram_awsize;
 wire  [1:0] ram_awburst;
+wire  ram_awlock;
 wire  [3:0] ram_awcache;
 wire  [2:0] ram_awprot;
 (* mark_debug = "true", keep = "true" *) wire        ram_awvalid;
@@ -1035,24 +1068,24 @@ Facet facet_inst(
   .io_jtag_tms(jtag_tms),
   .io_jtag_tdo(jtag_tdo),
   .io_jtag_tdi(jtag_tdi),
-  .extAxi4Master_awvalid(ram_awvalid), // output              
-  .extAxi4Master_awready(ram_awready), // input               
-  .extAxi4Master_awaddr(ram_awaddr), // output     [31:0]   
-  .extAxi4Master_awid(ram_awid), // output     [1:0]    
-  .extAxi4Master_awlen(ram_awlen), // output     [7:0]    
-  .extAxi4Master_awsize(ram_awsize), // output     [2:0]    
-  .extAxi4Master_awburst(ram_awburst), // output     [1:0]    
-  .extAxi4Master_awcache(ram_awcache), // output     [3:0]    
-  .extAxi4Master_awprot(ram_awprot), // output     [2:0]    
-  .extAxi4Master_wvalid(ram_wvalid), // output              
-  .extAxi4Master_wready(ram_wready), // input               
-  .extAxi4Master_wdata(ram_wdata), // output     [31:0]   
-  .extAxi4Master_wstrb(ram_wstrb), // output     [3:0]    
-  .extAxi4Master_wlast(ram_wlast), // output              
-  .extAxi4Master_bvalid(ram_bvalid), // input               
-  .extAxi4Master_bready(ram_bready), // output              
-  .extAxi4Master_bid(ram_bid), // input      [1:0]    
-  .extAxi4Master_bresp(ram_bresp), // input      [1:0]    
+  .extAxi4Master_awvalid(), // output              
+  .extAxi4Master_awready(), // input               
+  .extAxi4Master_awaddr(), // output     [31:0]   
+  .extAxi4Master_awid(), // output     [1:0]    
+  .extAxi4Master_awlen(), // output     [7:0]    
+  .extAxi4Master_awsize(), // output     [2:0]    
+  .extAxi4Master_awburst(), // output     [1:0]    
+  .extAxi4Master_awcache(), // output     [3:0]    
+  .extAxi4Master_awprot(), // output     [2:0]    
+  .extAxi4Master_wvalid(), // output              
+  .extAxi4Master_wready(0), // input               
+  .extAxi4Master_wdata(), // output     [31:0]   
+  .extAxi4Master_wstrb(), // output     [3:0]    
+  .extAxi4Master_wlast(), // output              
+  .extAxi4Master_bvalid(0), // input               
+  .extAxi4Master_bready(), // output              
+  .extAxi4Master_bid(), // input      [1:0]    
+  .extAxi4Master_bresp(), // input      [1:0]    
   .extAxi4Master_arvalid(ram_arvalid), // output              
   .extAxi4Master_arready(ram_arready), // input               
   .extAxi4Master_araddr(ram_araddr), // output     [31:0]   
@@ -1120,24 +1153,29 @@ Facet facet_inst(
 axi_ram #(.ID_WIDTH(2)) test_ram_inst (
   .clk                 (clk),
   .rst                 (rst),
+  //----------------Write Address Channel----------------//
   .s_axi_awid          (ram_awid   ),  //  input  wire [ID_WIDTH-1:0]    
   .s_axi_awaddr        (ram_awaddr ),  //  input  wire [ADDR_WIDTH-1:0]  
   .s_axi_awlen         (ram_awlen  ),  //  input  wire [7:0]             
   .s_axi_awsize        (ram_awsize ),  //  input  wire [2:0]             
-  .s_axi_awburst       (ram_awburst),  //  input  wire [1:0]             
+  .s_axi_awburst       (ram_awburst),  //  input  wire [1:0] 
+  .s_axi_awlock        (ram_awlock ),  //  input  wire         
   .s_axi_awcache       (ram_awcache),  //  input  wire [3:0]             
   .s_axi_awprot        (ram_awprot ),  //  input  wire [2:0]             
   .s_axi_awvalid       (ram_awvalid),  //  input  wire                   
-  .s_axi_awready       (ram_awready),  //  output wire                   
+  .s_axi_awready       (ram_awready),  //  output wire   
+  //----------------Write Data Channel----------------//                
   .s_axi_wdata         (ram_wdata  ),  //  input  wire [DATA_WIDTH-1:0]  
   .s_axi_wstrb         (ram_wstrb  ),  //  input  wire [STRB_WIDTH-1:0]  
   .s_axi_wlast         (ram_wlast  ),  //  input  wire                   
   .s_axi_wvalid        (ram_wvalid ),  //  input  wire                   
-  .s_axi_wready        (ram_wready ),  //  output wire                   
+  .s_axi_wready        (ram_wready ),  //  output wire
+  //----------------Write Response Channel----------------//                   
   .s_axi_bid           (ram_bid    ),  //  output wire [ID_WIDTH-1:0]    
   .s_axi_bresp         (ram_bresp  ),  //  output wire [1:0]             
   .s_axi_bvalid        (ram_bvalid ),  //  output wire                   
-  .s_axi_bready        (ram_bready ),  //  input  wire                   
+  .s_axi_bready        (ram_bready ),  //  input  wire      
+  //----------------Read Address Channel----------------//             
   .s_axi_arid          (ram_arid   ),  //  input  wire [ID_WIDTH-1:0]    
   .s_axi_araddr        (ram_araddr ),  //  input  wire [ADDR_WIDTH-1:0]  
   .s_axi_arlen         (ram_arlen  ),  //  input  wire [7:0]             
@@ -1146,7 +1184,8 @@ axi_ram #(.ID_WIDTH(2)) test_ram_inst (
   .s_axi_arcache       (ram_arcache),  //  input  wire [3:0]             
   .s_axi_arprot        (ram_arprot ),  //  input  wire [2:0]             
   .s_axi_arvalid       (ram_arvalid),  //  input  wire                   
-  .s_axi_arready       (ram_arready),  //  output wire                   
+  .s_axi_arready       (ram_arready),  //  output wire     
+  //----------------Read Data Channel----------------//              
   .s_axi_rid           (ram_rid    ),  //  output wire [ID_WIDTH-1:0]    
   .s_axi_rdata         (ram_rdata  ),  //  output wire [DATA_WIDTH-1:0]  
   .s_axi_rresp         (ram_rresp  ),  //  output wire [1:0]             
@@ -1154,6 +1193,177 @@ axi_ram #(.ID_WIDTH(2)) test_ram_inst (
   .s_axi_rvalid        (ram_rvalid ),  //  output wire                   
   .s_axi_rready        (ram_rready )   //  input  wire                   
 );
+
+axis2ddr_top #(.C_M_AXI_ID_WIDTH(2)) axis2axi4_inst(
+  //----------------------------------------------------
+// AXIS slave port
+    // AXI4Stream sink: Clock
+    .S_AXIS_ACLK        (clk),
+    // AXI4Stream sink: Reset
+    .S_AXIS_ARESETN     (~rst),
+
+    // Ready to accept data in
+    .S_AXIS_TREADY      (S_AXIS_TREADY),
+    // Data in
+    .S_AXIS_TDATA       (S_AXIS_TDATA),
+    // Byte qualifier
+    .S_AXIS_TSTRB       (S_AXIS_TSTRB),
+    // Indicates boundary of last packet
+    .S_AXIS_TLAST       (S_AXIS_TLAST),
+    // Data is in valid
+    .S_AXIS_TVALID      (S_AXIS_TVALID),
+    // Indicate the start of one frame
+    .S_AXIS_TUSER       (S_AXIS_TUSER),
+
+
+//----------------------------------------------------
+// AXIS maxter port
+    // AXI4Stream sink: Clock
+    .M_AXIS_ACLK        (clk),
+    // AXI4Stream sink: Reset
+    .M_AXIS_ARESETN     (~rst),
+
+	// TREADY indicates that the slave can accept a transfer in the current cycle.
+    .M_AXIS_TREADY      (M_AXIS_TREADY),
+	// TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
+    .M_AXIS_TDATA       (M_AXIS_TDATA),
+	// TSTRB is the byte qualifier that indicates whether the content of the associated byte of TDATA is processed as a data byte or a position byte.
+    .M_AXIS_TSTRB       (M_AXIS_TSTRB),
+	// TLAST indicates the boundary of a packet.
+    .M_AXIS_TLAST       (M_AXIS_TLAST),
+	// Master Stream Ports. TVALID indicates that the master is driving a valid transfer. A transfer takes place when both TVALID and TREADY are asserted.
+    .M_AXIS_TVALID      (M_AXIS_TVALID),
+    // Indicate the start of one frame
+    .M_AXIS_TUSER       (M_AXIS_TUSER),
+
+
+//----------------------------------------------------
+// AXI-FULL master port
+    // Global Clock Signal.
+    .M_AXI_ACLK         (clk),         
+    // Global Reset Singal. This Signal is Active Low
+    .M_AXI_ARESETN      (~rst),
+
+    //----------------Write Address Channel----------------//
+    // Master Interface Write Address ID
+    .M_AXI_AWID         (ram_awid),
+    // Master Interface Write Address
+    .M_AXI_AWADDR       (ram_awaddr),
+    // Burst length. The burst length gives the exact number of transfers in a burst
+    .M_AXI_AWLEN        (ram_awlen),
+    // Burst size. This signal indicates the size of each transfer in the burst
+    .M_AXI_AWSIZE       (ram_awsize),
+    // Burst type. The burst type and the size information. 
+    // determine how the address for each transfer within the burst is calculated.
+    .M_AXI_AWBURST      (ram_awburst),
+    // Lock type. Provides additional information about the
+    // atomic characteristics of the transfer.
+    .M_AXI_AWLOCK       (ram_awlock),
+    // Memory type. This signal indicates how transactions
+    // are required to progress through a system.
+    .M_AXI_AWCACHE      (ram_awcache),
+    // Protection type. This signal indicates the privilege
+    // and security level of the transaction. and whether
+    // the transaction is a data access or an instruction access.
+    .M_AXI_AWPROT       (ram_awprot),
+    // Quality of Service. QoS identifier sent for each write transaction.
+    .M_AXI_AWQOS        (),
+    // Optional User-defined signal in the write address channel.
+    .M_AXI_AWUSER       (),
+    // Write address valid. This signal indicates that
+    // the channel is signaling valid write address and control information.
+    .M_AXI_AWVALID      (ram_awvalid),
+    // Write address ready. This signal indicates that
+    // the slave is ready to accept an address and associated control signals
+    .M_AXI_AWREADY      (ram_awready),
+
+    //----------------Write Data Channel----------------//
+    // Master Interface Write Data.
+    .M_AXI_WDATA        (ram_wdata),
+    // Write strobes. This signal indicates which byte
+    // lanes hold valid data. There is one write strobe
+    // bit for each eight bits of the write data bus.
+    .M_AXI_WSTRB        (ram_wstrb),
+    // Write last. This signal indicates the last transfer in a write burst.
+    .M_AXI_WLAST        (ram_wlast),
+    // Optional User-defined signal in the write data channel.
+    .M_AXI_WUSER        (),
+    // Write valid. This signal indicates that valid write
+    // data and strobes are available
+    .M_AXI_WVALID       (ram_wvalid),
+    // Write ready. This signal indicates that the slave
+    // can accept the write data.
+    .M_AXI_WREADY       (ram_wready),
+
+    //----------------Write Response Channel----------------//
+    // Master Interface Write Response.
+    .M_AXI_BID          (ram_bid),
+    // Write response. This signal indicates the status of the write transaction.
+    .M_AXI_BRESP        (ram_bresp),
+    // Optional User-defined signal in the write response channel
+    .M_AXI_BUSER        (),
+    // Write response valid. This signal indicates that the
+    // channel is signaling a valid write response.
+    .M_AXI_BVALID       (ram_bvalid),
+    // Response ready. This signal indicates that the master
+    // can accept a write response.
+    .M_AXI_BREADY       (ram_bready),
+
+    //----------------Read Address Channel----------------//
+    // Master Interface Read Address.
+    .M_AXI_ARID         (),
+    // Read address. This signal indicates the initial
+    // address of a read burst transaction.
+    .M_AXI_ARADDR       (),
+    // Burst length. The burst length gives the exact number of transfers in a burst
+    .M_AXI_ARLEN        (),
+    // Burst size. This signal indicates the size of each transfer in the burst
+    .M_AXI_ARSIZE       (),
+    // Burst type. The burst type and the size information. 
+    // determine how the address for each transfer within the burst is calculated.
+    .M_AXI_ARBURST      (),
+    // Lock type. Provides additional information about the
+    // atomic characteristics of the transfer.
+    .M_AXI_ARLOCK       (),
+    // Memory type. This signal indicates how transactions
+    // are required to progress through a system.
+    .M_AXI_ARCACHE      (),
+    // Protection type. This signal indicates the privilege
+    // and security level of the transaction. and whether
+    // the transaction is a data access or an instruction access.
+    .M_AXI_ARPROT       (),
+    // Quality of Service. QoS identifier sent for each read transaction
+    .M_AXI_ARQOS        (),
+    // Optional User-defined signal in the read address channel.
+    .M_AXI_ARUSER       (),
+    // Write address valid. This signal indicates that
+    // the channel is signaling valid read address and control information
+    .M_AXI_ARVALID      (),
+    // Read address ready. This signal indicates that
+    // the slave is ready to accept an address and associated control signals
+    .M_AXI_ARREADY      (1'b0),
+
+    //----------------Read Data Channel----------------//
+    // Read ID tag. This signal is the identification tag
+    // for the read data group of signals generated by the slave.
+    .M_AXI_RID          (),
+    // Master Read Data
+    .M_AXI_RDATA        (),
+    // Read response. This signal indicates the status of the read transfer
+    .M_AXI_RRESP        (),
+    // Read last. This signal indicates the last transfer in a read burst
+    .M_AXI_RLAST        (),
+    // Optional User-defined signal in the read address channel.
+    .M_AXI_RUSER        (),
+    // Read valid. This signal indicates that the channel
+    // is signaling the required read data.
+    .M_AXI_RVALID       (1'b0),
+    // Read ready. This signal indicates that the master can
+    // accept the read data and response information.
+    .M_AXI_RREADY       ()
+);
+
+
 
 endmodule
 

@@ -22,3 +22,11 @@ modules.order
 *.str
 
 tags
+
+fpga/ip/
+fpga/mqnic/AU280/fpga_100g/fpga/fpga.runs
+fpga/mqnic/AU280/fpga_100g/fpga/fpga.cache
+fpga/mqnic/AU280/fpga_100g/lib_rmt
+fpga/mqnic/AU280/fpga_100g/fpga/fpga.gen
+fpga/mqnic/AU280/fpga_100g/fpga
+fpga/mqnic/AU50

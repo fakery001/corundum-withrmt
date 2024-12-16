@@ -1002,7 +1002,7 @@ assign m_axis_stat_tvalid = 1'b0;
 assign gpio_out = { 31'b0, riscv_uart_txd };
 assign riscv_uart_rxd = gpio_in[0];
 
-/* SoC AXI4 master to AXI4 RAM */
+/* AXIs2axi4 AXI4 master to AXI4 RAM, AXIs2axi4 write, soc read  */
 wire  [1:0] ram_awid;
 (* mark_debug = "true", keep = "true" *) wire [31:0] ram_awaddr;
 wire  [7:0] ram_awlen;
@@ -1048,6 +1048,53 @@ assign ram_wactive = ram_wvalid & ram_wready;
 assign ram_aractive = ram_arvalid & ram_arready;
 assign ram_ractive = ram_rvalid & ram_rready;
 
+
+/* SoC AXI4 master to AXI4 ram1, AXIs2axi4 read, soc write */
+wire  [1:0] ram1_awid;
+(* mark_debug = "true", keep = "true" *) wire [31:0] ram1_awaddr;
+wire  [7:0] ram1_awlen;
+wire  [2:0] ram1_awsize;
+wire  [1:0] ram1_awburst;
+wire  ram1_awlock;
+wire  [3:0] ram1_awcache;
+wire  [2:0] ram1_awprot;
+(* mark_debug = "true", keep = "true" *) wire        ram1_awvalid;
+(* mark_debug = "true", keep = "true" *) wire        ram1_awready;
+wire  [1:0] ram1_arid;
+(* mark_debug = "true", keep = "true" *) wire [31:0] ram1_araddr;
+wire  [7:0] ram1_arlen;
+wire  [2:0] ram1_arsize;
+wire  [1:0] ram1_arburst;
+wire  [3:0] ram1_arcache;
+wire  [2:0] ram1_arprot;
+(* mark_debug = "true", keep = "true" *) wire        ram1_arvalid;
+(* mark_debug = "true", keep = "true" *) wire        ram1_arready;
+(* mark_debug = "true", keep = "true" *) wire [31:0] ram1_wdata;
+wire  [3:0] ram1_wstrb;
+wire        ram1_wlast;
+(* mark_debug = "true", keep = "true" *) wire        ram1_wvalid;
+(* mark_debug = "true", keep = "true" *) wire        ram1_wready;
+wire  [1:0] ram1_bid;
+wire  [1:0] ram1_bresp;
+wire        ram1_bvalid;
+wire        ram1_bready;
+wire  [1:0] ram1_rid;
+(* mark_debug = "true", keep = "true" *) wire [31:0] ram1_rdata;
+wire  [1:0] ram1_rresp;
+wire        ram1_rlast;
+(* mark_debug = "true", keep = "true" *) wire        ram1_rvalid;
+(* mark_debug = "true", keep = "true" *) wire        ram1_rready;
+
+/* active beats, useful as capture (and trigger) condition for an ILA */
+(* mark_debug = "true", keep = "true" *) wire        ram1_awactive;
+(* mark_debug = "true", keep = "true" *) wire        ram1_wactive;
+assign ram1_awactive = ram1_awvalid & ram1_awready;
+assign ram1_wactive = ram1_wvalid & ram1_wready;
+(* mark_debug = "true", keep = "true" *) wire        ram1_aractive;
+(* mark_debug = "true", keep = "true" *) wire        ram1_ractive;
+assign ram1_aractive = ram1_arvalid & ram1_arready;
+assign ram1_ractive = ram1_rvalid & ram1_rready;
+
 /*
  * RISC-V
  *
@@ -1068,24 +1115,24 @@ Facet facet_inst(
   .io_jtag_tms(jtag_tms),
   .io_jtag_tdo(jtag_tdo),
   .io_jtag_tdi(jtag_tdi),
-  .extAxi4Master_awvalid(), // output              
-  .extAxi4Master_awready(), // input               
-  .extAxi4Master_awaddr(), // output     [31:0]   
-  .extAxi4Master_awid(), // output     [1:0]    
-  .extAxi4Master_awlen(), // output     [7:0]    
-  .extAxi4Master_awsize(), // output     [2:0]    
-  .extAxi4Master_awburst(), // output     [1:0]    
-  .extAxi4Master_awcache(), // output     [3:0]    
-  .extAxi4Master_awprot(), // output     [2:0]    
-  .extAxi4Master_wvalid(), // output              
-  .extAxi4Master_wready(0), // input               
-  .extAxi4Master_wdata(), // output     [31:0]   
-  .extAxi4Master_wstrb(), // output     [3:0]    
-  .extAxi4Master_wlast(), // output              
-  .extAxi4Master_bvalid(0), // input               
-  .extAxi4Master_bready(), // output              
-  .extAxi4Master_bid(), // input      [1:0]    
-  .extAxi4Master_bresp(), // input      [1:0]    
+  .extAxi4Master_awvalid(ram1_awvalid), // output              
+  .extAxi4Master_awready(ram1_awready), // input               
+  .extAxi4Master_awaddr(ram1_awaddr), // output     [31:0]   
+  .extAxi4Master_awid(ram1_awid), // output     [1:0]    
+  .extAxi4Master_awlen(ram1_awlen), // output     [7:0]    
+  .extAxi4Master_awsize(ram1_awsize), // output     [2:0]    
+  .extAxi4Master_awburst(ram1_awburst), // output     [1:0]    
+  .extAxi4Master_awcache(ram1_awcache), // output     [3:0]    
+  .extAxi4Master_awprot(ram1_awprot), // output     [2:0]    
+  .extAxi4Master_wvalid(ram1_wvalid), // output              
+  .extAxi4Master_wready(ram1_wready), // input               
+  .extAxi4Master_wdata(ram1_wdata), // output     [31:0]   
+  .extAxi4Master_wstrb(ram1_wstrb), // output     [3:0]    
+  .extAxi4Master_wlast(ram1_wlast), // output              
+  .extAxi4Master_bvalid(ram1_bvalid), // input               
+  .extAxi4Master_bready(ram1_bready), // output              
+  .extAxi4Master_bid(ram1_bid), // input      [1:0]    
+  .extAxi4Master_bresp(ram1_bresp), // input      [1:0]    
   .extAxi4Master_arvalid(ram_arvalid), // output              
   .extAxi4Master_arready(ram_arready), // input               
   .extAxi4Master_araddr(ram_araddr), // output     [31:0]   
@@ -1150,6 +1197,7 @@ Facet facet_inst(
 
 /* not used as program memory, just an AXI4 test slave */
 /* ID width is clog2(num_masters) num_masters = 2, but we foresee 4 (I,D, PCIe, JTAG->AXI) */
+/*AXIs2axi4 write, soc read */
 axi_ram #(.ID_WIDTH(2)) test_ram_inst (
   .clk                 (clk),
   .rst                 (rst),
@@ -1192,6 +1240,53 @@ axi_ram #(.ID_WIDTH(2)) test_ram_inst (
   .s_axi_rlast         (ram_rlast  ),  //  output wire                   
   .s_axi_rvalid        (ram_rvalid ),  //  output wire                   
   .s_axi_rready        (ram_rready )   //  input  wire                   
+);
+
+/* not used as program1 memory, just an AXI4 test slave */
+/* ID width is clog2(num_masters) num_masters = 2, but we foresee 4 (I,D, PCIe, JTAG->AXI) */
+/*AXIs2axi4 read, soc write */
+axi_ram #(.ID_WIDTH(2)) test_ram1_inst1 (
+  .clk                 (clk),
+  .rst                 (rst),
+  //----------------Write Address Channel----------------//
+  .s_axi_awid          (ram1_awid   ),  //  input  wire [ID_WIDTH-1:0]    
+  .s_axi_awaddr        (ram1_awaddr ),  //  input  wire [ADDR_WIDTH-1:0]  
+  .s_axi_awlen         (ram1_awlen  ),  //  input  wire [7:0]             
+  .s_axi_awsize        (ram1_awsize ),  //  input  wire [2:0]             
+  .s_axi_awburst       (ram1_awburst),  //  input  wire [1:0] 
+  .s_axi_awlock        (ram1_awlock ),  //  input  wire         
+  .s_axi_awcache       (ram1_awcache),  //  input  wire [3:0]             
+  .s_axi_awprot        (ram1_awprot ),  //  input  wire [2:0]             
+  .s_axi_awvalid       (ram1_awvalid),  //  input  wire                   
+  .s_axi_awready       (ram1_awready),  //  output wire   
+  //----------------Write Data Channel----------------//                
+  .s_axi_wdata         (ram1_wdata  ),  //  input  wire [DATA_WIDTH-1:0]  
+  .s_axi_wstrb         (ram1_wstrb  ),  //  input  wire [STRB_WIDTH-1:0]  
+  .s_axi_wlast         (ram1_wlast  ),  //  input  wire                   
+  .s_axi_wvalid        (ram1_wvalid ),  //  input  wire                   
+  .s_axi_wready        (ram1_wready ),  //  output wire
+  //----------------Write Response Channel----------------//                   
+  .s_axi_bid           (ram1_bid    ),  //  output wire [ID_WIDTH-1:0]    
+  .s_axi_bresp         (ram1_bresp  ),  //  output wire [1:0]             
+  .s_axi_bvalid        (ram1_bvalid ),  //  output wire                   
+  .s_axi_bready        (ram1_bready ),  //  input  wire      
+  //----------------Read Address Channel----------------//             
+  .s_axi_arid          (ram1_arid   ),  //  input  wire [ID_WIDTH-1:0]    
+  .s_axi_araddr        (ram1_araddr ),  //  input  wire [ADDR_WIDTH-1:0]  
+  .s_axi_arlen         (ram1_arlen  ),  //  input  wire [7:0]             
+  .s_axi_arsize        (ram1_arsize ),  //  input  wire [2:0]             
+  .s_axi_arburst       (ram1_arburst),  //  input  wire [1:0]             
+  .s_axi_arcache       (ram1_arcache),  //  input  wire [3:0]             
+  .s_axi_arprot        (ram1_arprot ),  //  input  wire [2:0]             
+  .s_axi_arvalid       (ram1_arvalid),  //  input  wire                   
+  .s_axi_arready       (ram1_arready),  //  output wire     
+  //----------------Read Data Channel----------------//              
+  .s_axi_rid           (ram1_rid    ),  //  output wire [ID_WIDTH-1:0]    
+  .s_axi_rdata         (ram1_rdata  ),  //  output wire [DATA_WIDTH-1:0]  
+  .s_axi_rresp         (ram1_rresp  ),  //  output wire [1:0]             
+  .s_axi_rlast         (ram1_rlast  ),  //  output wire                   
+  .s_axi_rvalid        (ram1_rvalid ),  //  output wire                   
+  .s_axi_rready        (ram1_rready )   //  input  wire                   
 );
 
 axis2ddr_top #(.C_M_AXI_ID_WIDTH(2)) axis2axi4_inst(
@@ -1311,56 +1406,56 @@ axis2ddr_top #(.C_M_AXI_ID_WIDTH(2)) axis2axi4_inst(
 
     //----------------Read Address Channel----------------//
     // Master Interface Read Address.
-    .M_AXI_ARID         (),
+    .M_AXI_ARID         (ram1_arid),
     // Read address. This signal indicates the initial
     // address of a read burst transaction.
-    .M_AXI_ARADDR       (),
+    .M_AXI_ARADDR       (ram1_araddr),
     // Burst length. The burst length gives the exact number of transfers in a burst
-    .M_AXI_ARLEN        (),
+    .M_AXI_ARLEN        (ram1_arlen),
     // Burst size. This signal indicates the size of each transfer in the burst
-    .M_AXI_ARSIZE       (),
+    .M_AXI_ARSIZE       (ram1_arsize),
     // Burst type. The burst type and the size information. 
     // determine how the address for each transfer within the burst is calculated.
-    .M_AXI_ARBURST      (),
+    .M_AXI_ARBURST      (ram1_arburst),
     // Lock type. Provides additional information about the
     // atomic characteristics of the transfer.
     .M_AXI_ARLOCK       (),
     // Memory type. This signal indicates how transactions
     // are required to progress through a system.
-    .M_AXI_ARCACHE      (),
+    .M_AXI_ARCACHE      (ram1_arcache),
     // Protection type. This signal indicates the privilege
     // and security level of the transaction. and whether
     // the transaction is a data access or an instruction access.
-    .M_AXI_ARPROT       (),
+    .M_AXI_ARPROT       (ram1_arprot),
     // Quality of Service. QoS identifier sent for each read transaction
     .M_AXI_ARQOS        (),
     // Optional User-defined signal in the read address channel.
     .M_AXI_ARUSER       (),
     // Write address valid. This signal indicates that
     // the channel is signaling valid read address and control information
-    .M_AXI_ARVALID      (),
+    .M_AXI_ARVALID      (ram1_arvalid),
     // Read address ready. This signal indicates that
     // the slave is ready to accept an address and associated control signals
-    .M_AXI_ARREADY      (1'b0),
+    .M_AXI_ARREADY      (ram1_arready),
 
     //----------------Read Data Channel----------------//
     // Read ID tag. This signal is the identification tag
     // for the read data group of signals generated by the slave.
-    .M_AXI_RID          (),
+    .M_AXI_RID          (ram1_rid),
     // Master Read Data
-    .M_AXI_RDATA        (),
+    .M_AXI_RDATA        (ram1_rdata),
     // Read response. This signal indicates the status of the read transfer
-    .M_AXI_RRESP        (),
+    .M_AXI_RRESP        (ram1_rresp),
     // Read last. This signal indicates the last transfer in a read burst
-    .M_AXI_RLAST        (),
+    .M_AXI_RLAST        (ram1_rlast),
     // Optional User-defined signal in the read address channel.
     .M_AXI_RUSER        (),
     // Read valid. This signal indicates that the channel
     // is signaling the required read data.
-    .M_AXI_RVALID       (1'b0),
+    .M_AXI_RVALID       (ram1_rvalid),
     // Read ready. This signal indicates that the master can
     // accept the read data and response information.
-    .M_AXI_RREADY       ()
+    .M_AXI_RREADY       (ram1_rready)
 );
 
 

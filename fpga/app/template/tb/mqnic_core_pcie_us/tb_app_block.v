@@ -5,6 +5,7 @@ module tb_app_block;
     // 参数定义
     parameter AXIS_DATA_WIDTH = 32;  // 数据宽度
     parameter TSTRB_WIDTH = AXIS_DATA_WIDTH / 8;  // 每字节的信号宽度
+    parameter M_AXI_awlen = 16;
     
     // 信号声明
     reg clk;                      // 时钟信号
@@ -35,6 +36,7 @@ module tb_app_block;
         .S_AXIS_TUSER    (M_AXIS_TUSER)
     );
 
+
     // 测试过程
     initial begin
         // 初始化信号
@@ -51,27 +53,36 @@ module tb_app_block;
         $display("Simulation start...");
         $display("Applying reset...");
         #10 rst = 0;  // 10ns 后解除复位
+
+
         
         // 激活数据传输
-        #200;  // 等待一些时间让系统稳定
+        #20;  // 等待一些时间让系统稳定
             M_AXIS_TVALID <= 1;  // 激活数据有效信号
-            M_AXIS_TDATA <= 32'hA5A5A5A5;  // 数据
+            M_AXIS_TDATA <= 32'h00000001;  // 数据
             M_AXIS_TSTRB <= 4'b1111;  // 字节使能
             M_AXIS_TLAST <= 0;  // 不是最后一帧
             M_AXIS_TUSER <= 1;  // 数据帧起始
-        #200;  // 等待一些时间让系统稳定
-            M_AXIS_TVALID <= 1;  // 激活数据有效信号
-            M_AXIS_TDATA <= 32'hb5b5b5b5;  // 数据
-            M_AXIS_TSTRB <= 4'b1111;  // 字节使能
-            M_AXIS_TLAST <= 0;  // 不是最后一帧
-            M_AXIS_TUSER <= 1;  // 数据帧起始
-        #200;  // 等待一些时间让系统稳定
-            M_AXIS_TVALID <= 1;  // 激活数据有效信号
-            M_AXIS_TDATA <= 32'hc5c5c5c5;  // 数据
-            M_AXIS_TSTRB <= 4'b1111;  // 字节使能
-            M_AXIS_TLAST <= 0;  // 不是最后一帧
-            M_AXIS_TUSER <= 1;  // 数据帧起始
-        // 在每个时钟周期产生数据
+
+        
+        // #200;  // 等待一些时间让系统稳定
+        repeat(M_AXI_awlen * 10) begin
+            #(CYCLE * 2)
+            M_AXIS_TDATA = M_AXIS_TDATA + 1'b1;
+        end
+
+        //     M_AXIS_TVALID <= 1;  // 激活数据有效信号
+        //     M_AXIS_TDATA <= 32'hb5b5b5b5;  // 数据
+        //     M_AXIS_TSTRB <= 4'b1111;  // 字节使能
+        //     M_AXIS_TLAST <= 0;  // 不是最后一帧
+        //     M_AXIS_TUSER <= 1;  // 数据帧起始
+        // #200;  // 等待一些时间让系统稳定
+        //     M_AXIS_TVALID <= 1;  // 激活数据有效信号
+        //     M_AXIS_TDATA <= 32'hc5c5c5c5;  // 数据
+        //     M_AXIS_TSTRB <= 4'b1111;  // 字节使能
+        //     M_AXIS_TLAST <= 0;  // 不是最后一帧
+        //     M_AXIS_TUSER <= 1;  // 数据帧起始
+        // // 在每个时钟周期产生数据
         $display("Start driving data...");
     end
 

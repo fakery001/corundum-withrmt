@@ -56,6 +56,9 @@ module axi_full_core#(
         input wire  INIT_AXI_TXN
     // Asserts when transaction is complete
     ,   output wire  TXN_DONE
+
+	// 外部中断输入，用于标识进入读状态
+	,	input wire	INTERRUPT
     // Asserts when ERROR is detected
     ,   output reg  ERROR
     // Global Clock Signal.
@@ -196,6 +199,8 @@ module axi_full_core#(
     ,   output  reg  [FDW-1:0] 	bwr_dat  
     ,   input   wire           	bwr_full
     ,   input   wire [FAW:0] 	brd_cnt  
+
+
 );
 
 
@@ -329,6 +334,8 @@ module axi_full_core#(
 	assign M_AXI_RREADY	= axi_rready;
 	//Example design I/O
 	assign TXN_DONE	= compare_done;
+	// 
+	assign interrupt_done = INTERRUPT;
 	//Burst size in bytes
 	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH/8;
 	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
@@ -803,7 +810,8 @@ module axi_full_core#(
 					compare_done <= 1'b0;
 				end
 				// else if (brd_cnt == 0) begin
-				else if (brd_cnt <= (PIXELS_HORIZONTAL*8)/FDW - 1) begin
+				//else if (brd_cnt <= (PIXELS_HORIZONTAL*8)/FDW - 1) begin
+				else if (interrupt_done) begin
 					mst_exec_state <= INIT_READ;                                                          
 					ERROR <= 1'b0;
 					compare_done <= 1'b0;

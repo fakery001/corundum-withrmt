@@ -3,22 +3,6 @@
 #include <string.h>
 #include "hash_table.h"
 
-size_t stringHash(const void* key, size_t size) {
-    const char* str = (const char*)key;
-    size_t hash = 0;
-    while (*str) {
-        hash = hash * 31 + *str;
-        str++;
-    }
-    return hash % size;
-}
-
-int stringCmp(const void* a, const void* b) {
-    const char* str1 = (const char*)a;
-    const char* str2 = (const char*)b;
-    return strcmp(str1, str2) == 0;
-}
-
 int main() {
    /*
     HashTable table;
@@ -44,28 +28,45 @@ int main() {
     */
 
     HashTable table;
-    initHashTable(&table, TABLE_SIZE, 0.75f, stringHash, stringCmp);
-    const char* keys[] = {"apple", "banana", "cherry", "date", "elderberry"};
-    const char* values[] = {"fruit1", "fruit2", "fruit3", "fruit4", "fruit5"};
-    size_t num_elements = sizeof(keys) / sizeof(keys[0]);
-    for (size_t i = 0; i < num_elements; ++i) {
-        insertHashTable(&table, strdup(keys[i]), strdup(values[i])); 
+    initHashTable(&table, TABLE_SIZE, LOAD_FACTOR_EXPAND, defaultHash, defaultCmp);
+    const char* key1 = "key1";
+    const char* value1 = "value1";
+    insertHashTable(&table, key1, strdup(value1)); 
+    const char* key2 = "key2";
+    const char* value2 = "value2";
+    insertHashTable(&table, key2, strdup(value2));
+    const char* key3 = "key3";
+    const char* value3 = "value3";
+    insertHashTable(&table, key3, strdup(value3));
+    const char* key4 = "key4";
+    const char* value4 = "value4";
+    insertHashTable(&table, key4, strdup(value4));
+    void* foundValue1 = searchHashTable(&table, key1);
+    if (foundValue1 != NULL) {
+        printf("Found value for key1: %s\n", (char*)foundValue1);
     }
-    // 搜索一个键
-    const char* search_key = "cherry";
-    void* found_value = searchHashTable(&table, search_key);
-    if (found_value) {
-        printf("Found value for key '%s': %s\n", search_key, (const char*)found_value);
-    } else {
-        printf("Key '%s' not found.\n", search_key);
+    void* foundValue2 = searchHashTable(&table, key2);
+    if (foundValue2 != NULL) {
+        printf("Found value for key2: %s\n", (char*)foundValue2);
     }
-    // 删除一个键值对
-    deleteHashTable(&table, search_key);
-    found_value = searchHashTable(&table, search_key);
-    if (found_value) {
-        printf("Found value for key '%s' after deletion: %s\n", search_key, (const char*)found_value);
-    } else {
-        printf("Key '%s' not found after deletion.\n", search_key);
+    insertHashTable(&table, key1, strdup("new_value1")); 
+    void* foundValue1Updated = searchHashTable(&table, key1);
+    if (foundValue1Updated != NULL) {
+        printf("Updated value for key1: %s\n", (char*)foundValue1Updated);
+    }
+    deleteHashTable(&table, key1);
+    void* deletedValue = searchHashTable(&table, key1);
+    if (deletedValue == NULL) {
+        printf("Key1 has been deleted.\n");
+    }
+    // 处理合并报文，搜索报表数据
+    Report report;
+    report.data = "report_data";
+    report.length = strlen(report.data);
+    handleMergeMessage(&table, &report);
+    void* foundReportData = searchHashTable(&table, report.data);
+    if (foundReportData != NULL) {
+        printf("Found report data: %s\n", (char*)foundReportData);
     }
     freeHashTable(&table);
     return 0;

@@ -92,6 +92,11 @@ int defaultCmp(const void* a, const void* b) {
     return a == b;
 }
 
+// 从内存中获取数据并加工，后期添加数据加工逻辑
+void* processData(const void* key) {
+    return strdup("Processed Data"); 
+}
+
 void* searchHashTable(HashTable* table, const void* key) {
     size_t index = table->hash(key, table->size);
     HashItem* item = table->items[index];
@@ -204,4 +209,9 @@ void rehashHashTable(HashTable* table, size_t new_size) {
 void shrinkHashTable(HashTable* table, size_t new_size) {
     if (new_size < TABLE_SIZE) return; 
     resizeHashTable(table, new_size);
+}
+
+// 这里将报表数据插入到哈希表中，后期加入报文组装逻辑
+void handleMergeMessage(HashTable* table, Report* report) {
+    insertHashTable(table, report->data, report->data);
 }

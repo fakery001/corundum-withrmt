@@ -44,7 +44,14 @@ typedef struct {
     int (*cmp)(const void* a, const void* b);
 } HashTable;
 
+typedef struct Report {
+    char* data; 
+    size_t length; 
+} Report;
+
 void initHashTable(HashTable* table, size_t initial_size, float load_factor, size_t (*hash_fn)(const void* key, size_t size), int (*cmp_fn)(const void* a, const void* b));
+size_t defaultHash(const void* key, size_t size);
+int defaultCmp(const void* a, const void* b);
 void* searchHashTable(HashTable* table, const void* key);
 void insertHashTable(HashTable* table, const void* key, void* value);
 void deleteHashTable(HashTable* table, const void* key);
@@ -52,5 +59,6 @@ void freeHashTable(HashTable* table);
 void resizeHashTable(HashTable* table, size_t new_size);
 void rehashHashTable(HashTable* table, size_t new_size);
 void shrinkHashTable(HashTable* table, size_t new_size);
+void handleMergeMessage(HashTable* table, Report* report);
 
 #endif 

@@ -1,66 +1,75 @@
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include "hash_table.h"
 
-#include "facet.h"
-
-void print(const char*str){
-    while(*str){
-        uart_write(UART,*str);
+size_t stringHash(const void* key, size_t size) {
+    const char* str = (const char*)key;
+    size_t hash = 0;
+    while (*str) {
+        hash = hash * 31 + *str;
         str++;
     }
-}
-void println(const char*str){
-    print(str);
-    uart_write(UART, '\r');
-    uart_write(UART, '\n');
+    return hash % size;
 }
 
-void delay(uint32_t loops){
-    for(int i=0;i<loops;i++){
-        int tmp = GPIO_A->OUTPUT;
+int stringCmp(const void* a, const void* b) {
+    const char* str1 = (const char*)a;
+    const char* str2 = (const char*)b;
+    return strcmp(str1, str2) == 0;
+}
+
+int main() {
+   /*
+    HashTable table;
+    initHashTable(&table);
+    insertHashTable(&table, 100, "Value for key 100");
+    insertHashTable(&table, 200, "Value for key 200");
+    insertHashTable(&table, 300, "Value for key 300");
+    insertHashTable(&table, 400, "Value for key 400");
+    void* value = searchHashTable(&table, 300);
+    if (value != NULL) {
+        printf("Found value for key 300: %s\n", (char*)value);
+    } else {
+        printf("Value for key 300 not found.\n");
     }
-}
-
-void main() {
-    uint32_t i = 0;
-	while (0) {
-		*AXI_M1 = i++;
-	}
-    TIMER_PRESCALER->LIMIT = 7;
-    timer_init(TIMER_A);
-    TIMER_A->LIMIT = 12;
-    TIMER_A->CLEARS_TICKS = 1;
-
-    Uart_Config uartConfig;
-    uartConfig.dataLength = 8;
-    uartConfig.parity = NONE;
-    uartConfig.stop = ONE;
-    // 250 MHz core clock, 115200 baud
-    uartConfig.clockDivider = (250000000ULL/8/115200)-1;
-    uart_applyConfig(UART, &uartConfig);
-
-    GPIO_A->OUTPUT_ENABLE = 0x0000000F;
-    GPIO_A->OUTPUT = 0x00000001;
-
-
-
-    println("Hello world!");
-    const int nleds = 4;
-    const int nloops = 2000000;
-    while (1) {
-        uint32_t timer_value = TIMER_A->VALUE;
-        println("Hello world!\n");
-        for(unsigned int i=0;i<nleds-1;i++){
-            GPIO_A->OUTPUT = 1<<i;
-            delay(nloops);
-        }
-        for(unsigned int i=0;i<nleds-1;i++){
-            GPIO_A->OUTPUT = (1<<(nleds-1))>>i;
-            *AXI_M1 = 0xABCDEF12;
-            *AXI_M1 = 0xABCDEF34;
-            *AXI_M1 = 0xABCDEF56;
-            delay(nloops);
-        }
+    value = searchHashTable(&table, 400);
+    if (value != NULL) {
+        printf("Found value for key 400: %s\n", (char*)value);
+    } else {
+        printf("Value for key 400 not found.\n");
     }
+    freeHashTable(&table);
+    return 0;
+    */
+
+    HashTable table;
+    initHashTable(&table, TABLE_SIZE, 0.75f, stringHash, stringCmp);
+    const char* keys[] = {"apple", "banana", "cherry", "date", "elderberry"};
+    const char* values[] = {"fruit1", "fruit2", "fruit3", "fruit4", "fruit5"};
+    size_t num_elements = sizeof(keys) / sizeof(keys[0]);
+    for (size_t i = 0; i < num_elements; ++i) {
+        insertHashTable(&table, strdup(keys[i]), strdup(values[i])); 
+    }
+    // 搜索一个键
+    const char* search_key = "cherry";
+    void* found_value = searchHashTable(&table, search_key);
+    if (found_value) {
+        printf("Found value for key '%s': %s\n", search_key, (const char*)found_value);
+    } else {
+        printf("Key '%s' not found.\n", search_key);
+    }
+    // 删除一个键值对
+    deleteHashTable(&table, search_key);
+    found_value = searchHashTable(&table, search_key);
+    if (found_value) {
+        printf("Found value for key '%s' after deletion: %s\n", search_key, (const char*)found_value);
+    } else {
+        printf("Key '%s' not found after deletion.\n", search_key);
+    }
+    freeHashTable(&table);
+    return 0;
+
 }
 
 void irqCallback(){

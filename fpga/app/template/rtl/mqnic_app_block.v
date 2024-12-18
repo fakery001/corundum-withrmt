@@ -176,7 +176,7 @@ module mqnic_app_block #
     parameter STAT_ID_WIDTH = 12,
 
     // AXI4Stream sink: Data Width
-    parameter AXIS_SLAVE_DATA_WIDTH = 32
+    parameter AXIS_SLAVE_DATA_WIDTH = 512
 )
 (
     (* mark_debug = "true", keep = "true" *) 
@@ -662,19 +662,19 @@ module mqnic_app_block #
     input  wire                                           jtag_tms,
     input  wire                                           jtag_tck
 
-    // AXIS slave port
-    // Ready to accept data in
-    ,   output wire  S_AXIS_TREADY
-    // Data in
-    ,   input wire [AXIS_SLAVE_DATA_WIDTH-1 : 0] S_AXIS_TDATA
-    // Byte qualifier
-    ,   input wire [(AXIS_SLAVE_DATA_WIDTH/8)-1 : 0] S_AXIS_TSTRB
-    // Indicates boundary of last packet
-    ,   input wire  S_AXIS_TLAST
-    // Data is in valid
-    ,   input wire  S_AXIS_TVALID
-    // Indicate the start of one frame
-    ,   input wire  S_AXIS_TUSER
+    // // AXIS slave port
+    // // Ready to accept data in
+    // ,   output wire  S_AXIS_TREADY
+    // // Data in
+    // ,   input wire [AXIS_SLAVE_DATA_WIDTH-1 : 0] S_AXIS_TDATA
+    // // Byte qualifier
+    // ,   input wire [(AXIS_SLAVE_DATA_WIDTH/8)-1 : 0] S_AXIS_TSTRB
+    // // Indicates boundary of last packet
+    // ,   input wire  S_AXIS_TLAST
+    // // Data is in valid
+    // ,   input wire  S_AXIS_TVALID
+    // // Indicate the start of one frame
+    // ,   input wire  S_AXIS_TUSER
 
     // AXIS maxter port
 	// TREADY indicates that the slave can accept a transfer in the current cycle.
@@ -856,6 +856,7 @@ assign s_axis_sync_tx_cpl_ready = m_axis_sync_tx_cpl_ready;
 (* mark_debug = "true", keep = "true" *) wire [127:0] m_axis_riscv_sync_rx_tuser;
 (* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tvalid;
 (* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tlast;
+(* mark_debug = "true", keep = "true" *) wire  m_axis_riscv_sync_rx_tready;
 
 // test riscv crossbar
 riscv_parser #(
@@ -890,7 +891,7 @@ riscv_parser #(
 	.c_m_axis_tkeep(m_axis_riscv_sync_rx_tkeep),
 	.c_m_axis_tuser(m_axis_riscv_sync_rx_tuser),
 	.c_m_axis_tvalid(m_axis_riscv_sync_rx_tvalid),
-    .c_m_axis_tready(1'b1),
+    .c_m_axis_tready(m_axis_riscv_sync_rx_tready),
 	.c_m_axis_tlast(m_axis_riscv_sync_rx_tlast)
 );
 
@@ -1198,7 +1199,8 @@ Facet facet_inst(
 /* not used as program memory, just an AXI4 test slave */
 /* ID width is clog2(num_masters) num_masters = 2, but we foresee 4 (I,D, PCIe, JTAG->AXI) */
 /*AXIs2axi4 write, soc read */
-axi_ram #(.ID_WIDTH(2)) test_ram_inst (
+axi_ram #(.ID_WIDTH(2)
+) test_ram_inst (
   .clk                 (clk),
   .rst                 (rst),
   //----------------Write Address Channel----------------//
@@ -1245,7 +1247,8 @@ axi_ram #(.ID_WIDTH(2)) test_ram_inst (
 /* not used as program1 memory, just an AXI4 test slave */
 /* ID width is clog2(num_masters) num_masters = 2, but we foresee 4 (I,D, PCIe, JTAG->AXI) */
 /*AXIs2axi4 read, soc write */
-axi_ram #(.ID_WIDTH(2)) test_ram1_inst1 (
+axi_ram #(.ID_WIDTH(2)
+) test_ram1_inst1 (
   .clk                 (clk),
   .rst                 (rst),
   //----------------Write Address Channel----------------//
@@ -1298,17 +1301,17 @@ axis2ddr_top #(.C_M_AXI_ID_WIDTH(2)) axis2axi4_inst(
     .S_AXIS_ARESETN     (~rst),
 
     // Ready to accept data in
-    .S_AXIS_TREADY      (S_AXIS_TREADY),
+    .S_AXIS_TREADY      (m_axis_riscv_sync_rx_tready),
     // Data in
-    .S_AXIS_TDATA       (S_AXIS_TDATA),
+    .S_AXIS_TDATA       (m_axis_riscv_sync_rx_tdata),
     // Byte qualifier
-    .S_AXIS_TSTRB       (S_AXIS_TSTRB),
+    .S_AXIS_TSTRB       (m_axis_riscv_sync_rx_tkeep),
     // Indicates boundary of last packet
-    .S_AXIS_TLAST       (S_AXIS_TLAST),
+    .S_AXIS_TLAST       (m_axis_riscv_sync_rx_tlast),
     // Data is in valid
-    .S_AXIS_TVALID      (S_AXIS_TVALID),
+    .S_AXIS_TVALID      (m_axis_riscv_sync_rx_tvalid),
     // Indicate the start of one frame
-    .S_AXIS_TUSER       (S_AXIS_TUSER),
+    .S_AXIS_TUSER       (1'b1),
 
 
 //----------------------------------------------------
@@ -1319,7 +1322,7 @@ axis2ddr_top #(.C_M_AXI_ID_WIDTH(2)) axis2axi4_inst(
     .M_AXIS_ARESETN     (~rst),
 
 	// TREADY indicates that the slave can accept a transfer in the current cycle.
-    .M_AXIS_TREADY      (M_AXIS_TREADY),
+    .M_AXIS_TREADY      (1'b1),
 	// TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
     .M_AXIS_TDATA       (M_AXIS_TDATA),
 	// TSTRB is the byte qualifier that indicates whether the content of the associated byte of TDATA is processed as a data byte or a position byte.

@@ -3,7 +3,7 @@
 `define ETH_TYPE_IPV4	16'h0008
 `define IPPROT_UDP		8'h11
 `define CONTROL_PORT    16'hf2f1
-`define RISCV_PORT      16'heeee
+`define RISCV_PORT      16'ha2a1
 
 module riscv_parser #(
 	parameter C_S_AXIS_DATA_WIDTH = 512,

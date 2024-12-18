@@ -114,7 +114,8 @@ always@(posedge S_AXIS_ACLK or negedge S_AXIS_ARESETN) begin
         fwr_vld <= 1'b0;
         fwr_dat <= 0;
     end 
-    else if((data_buf_cnt == data_interval-1) & S_AXIS_TREADY & S_AXIS_TVALID & (S_AXIS_USER | frame_valid)) begin
+    //取消databuffer cnt判断
+    else if( S_AXIS_TREADY & S_AXIS_TVALID & (S_AXIS_USER | frame_valid)) begin
         fwr_vld <= 1'b1;
         fwr_dat <= {fifo_data_buf[0+:AXI4_DATA_WIDTH-AXIS_DATA_WIDTH], S_AXIS_TDATA}; 
     end

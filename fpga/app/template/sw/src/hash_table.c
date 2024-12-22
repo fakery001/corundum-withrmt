@@ -72,9 +72,9 @@ void freeHashTable(HashTable* table) {
 */
 
 void initHashTable(HashTable* table, size_t initial_size, float load_factor, size_t (*hash_fn)(const void* key, size_t size), int (*cmp_fn)(const void* a, const void* b)) {
-    table->items = (HashItem**)calloc(initial_size, sizeof(HashItem*)); 
+    table->items = (HashItem**)calloc(initial_size, sizeof(HashItem*));
     if (table->items == NULL) {
-        fprintf(stderr, "Memory allocation failed for hash table.\n");
+        fprintf(stderr, "哈希表的内存分配失败。\n");
         exit(EXIT_FAILURE);
     }
     table->size = initial_size;
@@ -89,12 +89,19 @@ size_t defaultHash(const void* key, size_t size) {
 }
 
 int defaultCmp(const void* a, const void* b) {
-    return a == b;
+    return strcmp((const char*)a, (const char*)b) == 0;
 }
 
-// 从内存中获取数据并加工，后期添加数据加工逻辑
-void* processData(const void* key) {
-    return strdup("Processed Data"); 
+char* processData(const char* key, const char* value) {
+    size_t key_len = strlen(key);
+    size_t value_len = strlen(value);
+    char* processed_data = malloc(key_len + value_len + 2); // +2 for "=" and null terminator
+    if (processed_data == NULL) {
+        fprintf(stderr, "处理数据的内存分配失败。\n");
+        exit(EXIT_FAILURE);
+    }
+    sprintf(processed_data, "%s=%s", key, value);
+    return processed_data;
 }
 
 void* searchHashTable(HashTable* table, const void* key) {
@@ -109,9 +116,9 @@ void* searchHashTable(HashTable* table, const void* key) {
     return NULL;
 }
 
-void insertHashTable(HashTable* table, const void* key, void* value) {
+void insertHashTable(HashTable* table, const char* key, const char* value) {
     table->count++;
-    if (table->count > table->size * LOAD_FACTOR_EXPAND) {
+    if (table->count > table->size * table->load_factor) {
         resizeHashTable(table, table->size * 2);
     }
     size_t index = table->hash(key, table->size);
@@ -119,28 +126,34 @@ void insertHashTable(HashTable* table, const void* key, void* value) {
     if (item == NULL) {
         table->items[index] = (HashItem*)malloc(sizeof(HashItem));
         if (table->items[index] == NULL) {
-            fprintf(stderr, "Memory allocation failed for hash item.\n");
+            fprintf(stderr, "哈希项的内存分配失败。\n");
             exit(EXIT_FAILURE);
         }
-        table->items[index]->key = key; 
-        table->items[index]->value = value;
+        table->items[index]->key = strdup(key);
+        table->items[index]->value = processData(key, value);
         table->items[index]->next = NULL;
     } else {
         while (item->next != NULL) {
             if (table->cmp(item->key, key)) {
-                free(value); 
+                free(item->value);
+                item->value = processData(key, value);
                 return;
             }
             item = item->next;
         }
-        item->next = (HashItem*)malloc(sizeof(HashItem));
-        if (item->next == NULL) {
-            fprintf(stderr, "Memory allocation failed for hash item.\n");
-            exit(EXIT_FAILURE);
+        if (table->cmp(item->key, key)) {
+            free(item->value);
+            item->value = processData(key, value);
+        } else {
+            item->next = (HashItem*)malloc(sizeof(HashItem));
+            if (item->next == NULL) {
+                fprintf(stderr, "哈希项的内存分配失败。\n");
+                exit(EXIT_FAILURE);
+            }
+            item->next->key = strdup(key);
+            item->next->value = processData(key, value);
+            item->next->next = NULL;
         }
-        item->next->key = key; 
-        item->next->value = value;
-        item->next->next = NULL;
     }
 }
 
@@ -174,6 +187,8 @@ void freeHashTable(HashTable* table) {
         while (item != NULL) {
             HashItem* temp = item;
             item = item->next;
+            // 移除 const 限定符
+            free((void*)temp->key);
             free(temp->value);
             free(temp);
         }
@@ -184,7 +199,7 @@ void freeHashTable(HashTable* table) {
 void resizeHashTable(HashTable* table, size_t new_size) {
     HashItem** new_items = (HashItem**)calloc(new_size, sizeof(HashItem*));
     if (new_items == NULL) {
-        fprintf(stderr, "Memory allocation failed for new hash table.\n");
+        fprintf(stderr, "新哈希表的内存分配失败。\n");
         exit(EXIT_FAILURE);
     }
     rehashHashTable(table, new_size);
@@ -207,11 +222,26 @@ void rehashHashTable(HashTable* table, size_t new_size) {
 }
 
 void shrinkHashTable(HashTable* table, size_t new_size) {
-    if (new_size < TABLE_SIZE) return; 
+    if (new_size < TABLE_SIZE) return;
     resizeHashTable(table, new_size);
 }
 
-// 这里将报表数据插入到哈希表中，后期加入报文组装逻辑
 void handleMergeMessage(HashTable* table, Report* report) {
-    insertHashTable(table, report->data, report->data);
+    report->data = NULL;
+    report->length = 0;
+    for (size_t i = 0; i < table->size; i++) {
+        HashItem* item = table->items[i];
+        while (item != NULL) {
+            size_t new_length = report->length + strlen(item->value);
+            char* new_data = realloc(report->data, new_length + 1); // +1 for null terminator
+            if (new_data == NULL) {
+                fprintf(stderr, "组装消息的内存分配失败。\n");
+                exit(EXIT_FAILURE);
+            }
+            report->data = new_data;
+            strcpy(report->data + report->length, item->value);
+            report->length = new_length;
+            item = item->next;
+        }
+    }
 }

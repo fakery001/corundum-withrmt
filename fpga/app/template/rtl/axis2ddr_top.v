@@ -272,8 +272,8 @@ module axis2ddr_top#(
 
 
 axis_fifo_adapter #(
-    .S_DATA_WIDTH(512)
-,   .M_DATA_WIDTH(32)
+    .S_DATA_WIDTH(AXIS_DATA_WIDTH)
+,   .M_DATA_WIDTH(AXI4_DATA_WIDTH)
 ) u_axis_async_fifo_adapter(
            .clk        (S_AXIS_ACLK        )
     ,   .rst     (~S_AXIS_ARESETN     )

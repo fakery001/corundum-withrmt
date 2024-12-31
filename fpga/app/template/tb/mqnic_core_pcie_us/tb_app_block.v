@@ -15,7 +15,7 @@ module tb_app_block;
     reg [TSTRB_WIDTH-1 : 0] M_AXIS_TSTRB;      // byte qualifier
     reg M_AXIS_TLAST;            // TLAST 信号，指示数据包的边界
     reg M_AXIS_TVALID;           // TVALID 信号，表示数据有效
-    reg M_AXIS_TUSER;            // TUSER 信号，指示帧的开始
+    reg[96:0] M_AXIS_TUSER;            // TUSER 信号，指示帧的开始
 
     reg										m_axis_tready;
     reg										M_riscv_AXIS_TREADY;
@@ -68,19 +68,19 @@ end
     M_riscv_AXIS_TREADY <= 1'b1;
     M_AXIS_TDATA <= 512'b0; 
     M_AXIS_TSTRB <= 64'h0;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h1;
     M_AXIS_TVALID <= 1'b0;
     M_AXIS_TLAST <= 1'b0;
     #CYCLE;
     M_AXIS_TDATA <= {65'hffffffffffffffff,64'hffffffff81000002,16'h0002,143'b0, 8'h11, 24'hffff, 16'hf1f2, 32'b0, 16'h0008, 128'hfffffffffffffff}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     #CYCLE;
     M_AXIS_TDATA <= {65'hffffffffffffffff,64'hffffffff81000002,16'h0002,143'b0, 8'h11, 24'hffff, 16'ha1a2, 32'b0, 16'h0008, 128'hfffffffffffeeee}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     // #CYCLE
@@ -89,31 +89,31 @@ end
     #CYCLE
     M_AXIS_TDATA <= {64'hefffffffffffffff,64'hffffffffffffffff,384'hfffffffffffffffffffff}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     #CYCLE
     M_AXIS_TDATA <= {64'hdfffffffffffffff,64'hffffffffffffffff,384'b0}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 128'h0;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     #CYCLE
     M_AXIS_TDATA <= {64'hcfffffffffffffff,64'hffffffffffffffff,384'b0}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     #(CYCLE)
     M_AXIS_TDATA <= 512'h03030303000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
         #(CYCLE)
     M_AXIS_TDATA <= 512'h01010101000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 97'h00000cedc4ec21f3850220000;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     // #CYCLE;
@@ -125,13 +125,38 @@ end
         #(CYCLE)
     M_AXIS_TDATA <= 512'h02020202000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
+    M_AXIS_TUSER <= 128'h0;
+    M_AXIS_TVALID <= 1'b1;
+    M_AXIS_TLAST <= 1'b1;
+    #CYCLE;
+        #(CYCLE)
+    M_AXIS_TDATA <= 512'h06060303000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
+    M_AXIS_TSTRB <= 64'hffffffffffffffff;
+    M_AXIS_TUSER <= 128'h0;
+    M_AXIS_TVALID <= 1'b1;
+    M_AXIS_TLAST <= 1'b1;
+        #(CYCLE)
+    M_AXIS_TDATA <= 512'h05050101000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
+    M_AXIS_TSTRB <= 64'hffffffffffffffff;
+    M_AXIS_TUSER <= 128'h0;
+    M_AXIS_TVALID <= 1'b1;
+    M_AXIS_TLAST <= 1'b1;
+    // #CYCLE;
+    // M_AXIS_TDATA <= {65'hffffffffffffffff,64'hffffffff81000002,16'h0002,143'b0, 8'h11, 24'hffff, 16'ha1a2, 32'b0, 16'h0008, 128'hfffffffffffeeee}; 
+    // M_AXIS_TSTRB <= 64'hffffffffffffffff;
+    // M_AXIS_TUSER <= 128'h1;
+    // M_AXIS_TVALID <= 1'b1;
+    // M_AXIS_TLAST <= 1'b1;
+        #(CYCLE)
+    M_AXIS_TDATA <= 512'h04040202000000000400000002000000090090821a00a2a1d2040101a8c00201a8c06af71140000001002e000045000801000081050403020100090000000000; 
+    M_AXIS_TSTRB <= 64'hffffffffffffffff;
     M_AXIS_TUSER <= 128'h1;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
     #CYCLE;
     M_AXIS_TDATA <= {65'hffffffffffffffff,64'hffffffff81000002,16'h0002,143'b0, 8'h11, 24'hffff, 16'h1a2a, 32'b0, 16'h0008, 128'hfffffffffffeeee}; 
     M_AXIS_TSTRB <= 64'hffffffffffffffff;
-    M_AXIS_TUSER <= 128'h1;
+    M_AXIS_TUSER <= 128'h0;
     M_AXIS_TVALID <= 1'b1;
     M_AXIS_TLAST <= 1'b1;
 

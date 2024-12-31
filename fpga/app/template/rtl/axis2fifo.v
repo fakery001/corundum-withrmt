@@ -26,7 +26,7 @@ module axis2fifo#(
 		// AXI4Stream sink: Data Width
     ,   parameter AXIS_DATA_WIDTH	= 32
 		// AXI4 sink: Data Width as same as the data depth of the fifo
-    ,   parameter AXI4_DATA_WIDTH   = 128
+    ,   parameter AXI4_DATA_WIDTH   = 32
 )(
 //----------------------------------------------------
 // AXIS maxter port
@@ -105,7 +105,13 @@ always@(posedge S_AXIS_ACLK or negedge S_AXIS_ARESETN) begin
         fifo_data_buf   <=  0;
     end
     else if(S_AXIS_TREADY & S_AXIS_TVALID & (S_AXIS_USER | frame_valid)) begin
+        if(AXIS_DATA_WIDTH == AXI4_DATA_WIDTH) begin
+            fifo_data_buf   <=  S_AXIS_TDATA;
+        end
+        else begin
         fifo_data_buf   <=  {fifo_data_buf[0+:AXI4_DATA_WIDTH-AXIS_DATA_WIDTH], S_AXIS_TDATA};
+        end
+    
     end
 end
 
@@ -117,7 +123,12 @@ always@(posedge S_AXIS_ACLK or negedge S_AXIS_ARESETN) begin
     //取消databuffer cnt判断
     else if( S_AXIS_TREADY & S_AXIS_TVALID & (S_AXIS_USER | frame_valid)) begin
         fwr_vld <= 1'b1;
+        if(AXIS_DATA_WIDTH == AXI4_DATA_WIDTH) begin
+        fwr_dat <= S_AXIS_TDATA;
+        end
+        else begin
         fwr_dat <= {fifo_data_buf[0+:AXI4_DATA_WIDTH-AXIS_DATA_WIDTH], S_AXIS_TDATA}; 
+        end
     end
     else begin
         fwr_vld <= 1'b0;

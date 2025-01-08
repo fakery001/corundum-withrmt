@@ -24,24 +24,24 @@ module axis2ddr_top#(
         //the max depth of the fifo: 2^FIFO_AW
         parameter FIFO_AW = 10
 		// AXI4Stream sink: Data Width
-    ,   parameter AXIS_DATA_WIDTH = 32
+    ,   parameter AXIS_DATA_WIDTH = 512
 		// AXI4 sink: Data Width as same as the data depth of the fifo
-    ,   parameter AXI4_DATA_WIDTH = 32
+    ,   parameter AXI4_DATA_WIDTH = 32 
         // Horizontal resolution
-    ,   parameter pixels_horizontal = 4
+    ,   parameter pixels_horizontal = 64
         // Vertical resolution
-    ,   parameter pixels_vertical = 4
+    ,   parameter pixels_vertical = 128
         // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
     ,   parameter frame_delay = 1
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 16'h1000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'hE00000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 8
 		// Width of Address Bus
-	,   parameter integer C_M_AXI_ADDR_WIDTH	= 16
+	,   parameter integer C_M_AXI_ADDR_WIDTH	= 32
 		// Width of Data Bus
 	,   parameter integer C_M_AXI_DATA_WIDTH	= AXI4_DATA_WIDTH
 		// Width of User Write Address Bus
@@ -250,11 +250,56 @@ module axis2ddr_top#(
     wire                            brd_empty   ;
     wire [FIFO_AW:0]                brd_cnt     ;
 
+    //add axis fifo for trans
+    // AXIS maxter port
+    // AXI4Stream sink: Clock
+     wire  s_AXIS_ACLK;
+    // AXI4Stream sink: Reset
+    wire  s_AXIS_ARESETN;
+
+	// TREADY indicates that the slave can accept a transfer in the current cycle.
+     wire  s_AXIS_TREADY;
+	// TDATA is the primary payload that is used to provide the data that is passing across the interface from the master.
+     wire [AXI4_DATA_WIDTH-1 : 0] s_AXIS_TDATA;
+	//s the byte qualifier that indicates whether the content of the associated byte of TDATA is processed as a data byte or a position byte.
+     wire [(AXI4_DATA_WIDTH/8)-1 : 0] s_AXIS_TSTRB;
+	//ndicates the boundary of a packet.
+     wire  s_AXIS_TLAST;
+	//Stream Ports. TVALID indicates that the master is driving a valid transfer, A transfer takes place when both TVALID and TREADY are asserted.
+     wire  s_AXIS_TVALID;
+    //e the start of one frame
+     wire  s_AXIS_TUSER;
+
+
+axis_fifo_adapter #(
+    .S_DATA_WIDTH(AXIS_DATA_WIDTH)
+,   .M_DATA_WIDTH(AXI4_DATA_WIDTH)
+) u_axis_async_fifo_adapter(
+           .clk        (S_AXIS_ACLK        )
+    ,   .rst     (~S_AXIS_ARESETN     )
+    ,   .s_axis_tready      (S_AXIS_TREADY      )
+    ,   .s_axis_tdata       (S_AXIS_TDATA       )
+    ,   .s_axis_tkeep       (S_AXIS_TSTRB       )
+    ,   .s_axis_tlast       (S_AXIS_TLAST       )
+    ,   .s_axis_tvalid      (S_AXIS_TVALID      )
+    ,   .s_axis_tuser        (S_AXIS_TUSER       )
+
+    //,    .m_clk        (s_AXIS_ACLK        )
+//,   .m_rst     (s_AXIS_ARESETN     )
+    ,   .m_axis_tready      (s_AXIS_TREADY      )
+    ,   .m_axis_tdata       (s_AXIS_TDATA       )
+    ,   .m_axis_tkeep       (s_AXIS_TSTRB       )
+    ,   .m_axis_tlast       (s_AXIS_TLAST       )
+    ,   .m_axis_tvalid      (s_AXIS_TVALID      )
+    ,   .m_axis_tuser        (s_AXIS_TUSER       )
+);
+
+
 //---------------------------------------------------
 // AXI STREAM to FORWARD FIFO
 axis2fifo #(
         .FAW                (FIFO_AW            )
-    ,   .AXIS_DATA_WIDTH    (AXIS_DATA_WIDTH    )
+    ,   .AXIS_DATA_WIDTH    (AXI4_DATA_WIDTH    )
     ,   .AXI4_DATA_WIDTH    (AXI4_DATA_WIDTH    )
 )u_axis_salve2fifo(
 //----------------------------------------------------
@@ -273,12 +318,12 @@ axis2fifo #(
 // AXIS slave port
     ,   .S_AXIS_ACLK        (S_AXIS_ACLK        )
     ,   .S_AXIS_ARESETN     (S_AXIS_ARESETN     )
-    ,   .S_AXIS_TREADY      (S_AXIS_TREADY      )
-    ,   .S_AXIS_TDATA       (S_AXIS_TDATA       )
-    ,   .S_AXIS_TSTRB       (S_AXIS_TSTRB       )
-    ,   .S_AXIS_TLAST       (S_AXIS_TLAST       )
-    ,   .S_AXIS_TVALID      (S_AXIS_TVALID      )
-    ,   .S_AXIS_USER        (S_AXIS_TUSER       )
+    ,   .S_AXIS_TREADY      (s_AXIS_TREADY      )
+    ,   .S_AXIS_TDATA       (s_AXIS_TDATA       )
+    ,   .S_AXIS_TSTRB       (s_AXIS_TSTRB       )
+    ,   .S_AXIS_TLAST       (s_AXIS_TLAST       )
+    ,   .S_AXIS_TVALID      (s_AXIS_TVALID      )
+    ,   .S_AXIS_USER        (s_AXIS_TUSER       )
 
 
 //----------------------------------------------------

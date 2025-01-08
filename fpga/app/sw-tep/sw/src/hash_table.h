@@ -28,6 +28,7 @@ void freeHashTable(HashTable* table);
 #define TABLE_SIZE 256
 #define LOAD_FACTOR_EXPAND 0.75f
 #define LOAD_FACTOR_SHRINK 0.25f
+#define MAX_ERROR_MSG 256
 
 typedef struct HashItem {
     const void* key; // 修改为 const void*
@@ -61,4 +62,9 @@ void resizeHashTable(HashTable* table, size_t new_size);
 void rehashHashTable(HashTable* table, size_t new_size);
 void shrinkHashTable(HashTable* table, size_t new_size);
 void handleMergeMessage(HashTable* table, Report* report);
+size_t strLength(const char* str);
+void handleError(const char* msg);
+char* strCopy(const char* src);
+int strCmp(const char* a, const char* b);
+
 #endif 
